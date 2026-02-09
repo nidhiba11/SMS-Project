@@ -6,22 +6,34 @@
 
 <div class="course-page-header">
     <h2>Courses</h2>
+    @if (TempData["success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["success"]
+        </div>
+    }
 
     <form class="me-3" method="get" asp-action="Index">
         <div class="input-group course-search">
-            <input type="text" class="form-control" placeholder="Search courses..." name="searchTerm" />
+            <input type="text"
+                   class="form-control"
+                   placeholder="Search courses..."
+                   name="searchTerm"
+                   value="@Context.Request.Query["searchTerm"]" />
             <button class="btn btn-teal" type="submit">
                 <i class="bi bi-search"></i>
             </button>
         </div>
     </form>
-    @if (Context.Session.GetString("Role") == "Admin")
-    {
+    @if (User.IsInRole("Admin"))
+            {
+
         <a asp-action="Details" class="btn btn-manage-courses">
-            <i class="bi bi-gear-fill me-1"></i> Manage Courses
+        <i class="bi bi-gear-fill me-1"></i> Manage Courses
         </a>
-    }
+            }
 </div>
+
 
 <div class="row g-4">
     @foreach (var course in Model)

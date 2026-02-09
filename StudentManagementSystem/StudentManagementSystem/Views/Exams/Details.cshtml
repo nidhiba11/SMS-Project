@@ -11,7 +11,10 @@
     <!-- Header -->
     <div class="exam-header">
         <h2>@Model.ExamName</h2>
-        <span class="badge">@Model.Course.CourseName</span>
+        <span class="badge">
+            @(Model.Course != null ? Model.Course.CourseName : "No Course")
+        </span>
+
     </div>
 
     <!-- Info Cards -->

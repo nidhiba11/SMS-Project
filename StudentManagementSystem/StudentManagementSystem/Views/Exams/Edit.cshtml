@@ -1,5 +1,91 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model StudentManagementSystem.Models.Exam
+
+<div class="container mt-4">
+
+   
+    <div class="card shadow-sm exam-edit-card">
+        <div class="card-header bg-teal text-"white">
+            <h5 class="mb-0">Edit Examination</h5>
+        </div>
+
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+
+                <input type="hidden" asp-for="ExamId" />
+
+                <!-- Exam Name -->
+                <div class="mb-3">
+                    <label asp-for="ExamName" class="form-label"></label>
+                    <input asp-for="ExamName" class="form-control" />
+                </div>
+
+                <!-- Course -->
+                <div class="mb-3">
+                    <label asp-for="CourseId" class="form-label"></label>
+                    <select asp-for="CourseId" asp-items="ViewBag.Courses" class="form-control">
+                        <option value="">Select Course</option>
+                    </select>
+                </div>
+
+                <!-- Semester -->
+                <div class="mb-3">
+                    <label asp-for="Semester" class="form-label"></label>
+                    <input asp-for="Semester" type="number" class="form-control" />
+                </div>
+
+                <!-- Exam Date -->
+                <div class="mb-3">
+                    <label asp-for="ExamDate" class="form-label"></label>
+                    <input asp-for="ExamDate" type="date" class="form-control" />
+                </div>
+
+                <!-- Exam Type -->
+                <div class="mb-3">
+                    <label asp-for="ExamType" class="form-label"></label>
+                    <input asp-for="ExamType" class="form-control" />
+                </div>
+
+                <!-- Duration -->
+                <div class="mb-3">
+                    <label asp-for="DurationMinutes" class="form-label"></label>                   
+                    <input asp-for="DurationMinutes" type="number" class="form-control" />
+                </div>
+
+                <!-- Max Marks -->
+                <div class="mb-3">
+                    <label asp-for="MaxMarks" class="form-label"></label>
+                    <input asp-for="MaxMarks" type="number" class="form-control" />
+                </div>
+
+                <!-- Min Marks -->
+                <div class="mb-4">
+                    <label asp-for="MinMarks" class="form-label"></label>
+                    <input asp-for="MinMarks" type="number" class="form-control" />
+                </div>
+
+                <!-- Published Toggle -->
+                <div class="mb-4">
+                    <label class="form-label d-block">Published</label>
+                    <label class="switch">
+                        <input asp-for="IsPublished" type="checkbox" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-teal">
+                        Update Exam
+                    </button>
+
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

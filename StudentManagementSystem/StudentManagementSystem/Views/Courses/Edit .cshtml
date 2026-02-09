@@ -1,6 +1,7 @@
 ﻿@model StudentManagementSystem.Models.Course
+
 @{
-    ViewData["Title"] = "Add Course";
+    ViewData["Title"] = "Edit Course";
 }
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -56,30 +57,36 @@
 
                 <!-- Header -->
                 <div class="erp-header d-flex flex-column justify-content-center align-items-center text-white">
-                    <i class="bi bi-book-fill" style="font-size:32px;"></i>
-                    <h6 class="mb-0 fw-semibold">Add Course</h6>
+                    <i class="bi bi-pencil-square" style="font-size:32px;"></i>
+                    <h6 class="mb-0 fw-semibold">Edit Course</h6>
                 </div>
 
                 <!-- Body -->
                 <div class="card-body p-4">
-                    <form asp-action="Create" method="post">
+                    <form asp-action="Edit" method="post">
                         <div asp-validation-summary="All" class="text-danger"></div>
+
+
+                        <!-- Hidden ID -->
+                        <input type="hidden" asp-for="CourseId" />
 
                         <div class="mb-3">
                             <label class="erp-label">
                                 <i class="bi bi-journal-text me-1"></i> Course Name
                             </label>
-                            <input asp-for="CourseName" class="form-control erp-input" type="text"
-                                   placeholder="Enter course name" />
+                            <input asp-for="CourseName" class="form-control erp-input" />
+                            <span asp-validation-for="CourseName" class="text-danger"></span>
                         </div>
 
+                        <!-- ✅ Description Added -->
                         <div class="mb-3">
                             <label class="erp-label">
                                 <i class="bi bi-card-text me-1"></i> Description
                             </label>
-                            <textarea asp-for="Description" rows="3" type="text"
+                            <textarea asp-for="Description" rows="3"
                                       class="form-control erp-textarea"
                                       placeholder="Course description"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
 
                         <div class="row">
@@ -87,18 +94,18 @@
                                 <label class="erp-label">
                                     <i class="bi bi-clock me-1"></i> Duration
                                 </label>
-                                <input asp-for="Duration" type="number"
-                                       class="form-control erp-input"
-                                       placeholder="Years" />
+                                <input asp-for="Duration"
+                                       class="form-control erp-input" />
+                                <span asp-validation-for="Duration" class="text-danger"></span>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label class="erp-label">
                                     <i class="bi bi-calculator me-1"></i> Total Credits
                                 </label>
-                                <input asp-for="TotalCredits" type="number"
-                                       class="form-control erp-input"
-                                       placeholder="Credits" />
+                                <input asp-for="TotalCredits"
+                                       class="form-control erp-input" />
+                                <span asp-validation-for="TotalCredits" class="text-danger"></span>
                             </div>
                         </div>
 
@@ -106,13 +113,13 @@
                             <label class="erp-label">
                                 <i class="bi bi-building me-1"></i> Department
                             </label>
-                            <input asp-for="Department" type="text"
-                                   class="form-control erp-input"
-                                   placeholder="Department name" />
+                            <input asp-for="Department"
+                                   class="form-control erp-input" />
+                            <span asp-validation-for="Department" class="text-danger"></span>
                         </div>
 
                         <div class="form-check form-switch mb-4">
-                            <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
                             <label class="form-check-label fw-semibold">
                                 Active Course
                             </label>
@@ -124,7 +131,7 @@
                                 Back
                             </a>
                             <button type="submit" class="btn btn-erp">
-                                <i class="bi bi-save me-1"></i> Save Course
+                                <i class="bi bi-save me-1"></i> Update Course
                             </button>
                         </div>
 
@@ -137,3 +144,6 @@
     </div>
 </div>
 
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
