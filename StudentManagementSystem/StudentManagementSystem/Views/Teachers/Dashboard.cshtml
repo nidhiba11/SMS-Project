@@ -1,4 +1,6 @@
-﻿@{
+﻿@model StudentManagementSystem.Models.ViewModels.TeacherDashboardVM
+
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Teacher Dashboard";
 }
@@ -10,10 +12,8 @@
             min-height: 100vh;
             font-family: 'Segoe UI', sans-serif;
             margin: 0;
-            background: #e0f7f7; /* soft teal background */
+            background: #e0f7f7; 
         }
-
-        /* MAIN CONTENT FULL WIDTH */
         .main-content {
             flex: 1;
             padding: 30px 40px;
@@ -263,22 +263,26 @@
 <div class="main-content">
     <div class="page-header">
         <h1>Teacher Dashboard</h1>
-        <p>Welcome back, Amit Sharma 👋 — here is your teaching overview.</p>
+        <p>Welcome back,@Model.FullName 👋 — here is your teaching overview.</p>
     </div>
 
     <!-- Teacher Profile -->
     <div class="teacher-profile">
-        <img src="https://cdn-icons-png.flaticon.com/512/4140/4140037.png" alt="Teacher" class="profile-img" />
+        <img src="@Model.Photo" alt="Teacher" class="profile-img" />
+
         <div class="profile-info">
-            <h3 class="teacher-name">Amit Sharma</h3>
-            <p class="teacher-role">Senior Lecturer • Computer Science Dept</p>
-            <p class="teacher-email">amit.sharma@college.edu</p>
-        </div>
-        <div class="profile-actions">
-            <button class="profile-btn">View Profile</button>
-            <button class="profile-btn outline">Edit Info</button>
+            <h3 class="teacher-name">@Model.FullName</h3>
+
+            <p class="teacher-role">
+                @Model.Qualification • @Model.Department
+            </p>
+
+            <p class="teacher-email">
+                @Context.Session.GetString("FullName")
+            </p>
         </div>
     </div>
+
 
     <h2>Overview</h2>
     <p class="sub-text">Summary of your courses and students.</p>

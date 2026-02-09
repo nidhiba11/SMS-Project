@@ -204,18 +204,17 @@ namespace StudentManagementSystem.Controllers
         // Dashboard
         public IActionResult Dashboard()
         {
-            string userIdStr = HttpContext.Session.GetString("UserId");
-            if (string.IsNullOrEmpty(userIdStr))
-                return RedirectToAction("Login", "Account");
+            int? userId = HttpContext.Session.GetInt32("UserId");
 
-            int userId = int.Parse(userIdStr);
+            if (userId == null)
+                return RedirectToAction("Login", "Account");
 
             var teacher = _context.Teachers
                 .Include(t => t.User)
                 .FirstOrDefault(t => t.UserId == userId);
 
             if (teacher == null)
-                return NotFound();
+                return RedirectToAction("Login", "Account");
 
             TeacherDashboardVM vm = new TeacherDashboardVM
             {
@@ -224,13 +223,25 @@ namespace StudentManagementSystem.Controllers
                 Qualification = teacher.Qualification,
                 Experience = teacher.Experience,
                 Photo = teacher.Photo,
-                TotalExams = _context.Exams.Where(e => e.CourseId != null).Count(),
-                ResultsEntered = _context.Results.Where(r => r.TeacherId == teacher.TeacherId).Count(),
-                PublishedExams = _context.Exams.Where(e => e.IsPublished).Count(),
-                StudentsEvaluated = _context.Results.Where(r => r.TeacherId == teacher.TeacherId).Select(r => r.StudentId).Distinct().Count()
+                TotalExams = _context.Exams.Count(e => e.CourseId != null),
+                ResultsEntered = _context.Results.Count(r => r.TeacherId == teacher.TeacherId),
+                PublishedExams = _context.Exams.Count(e => e.IsPublished),
+                StudentsEvaluated = _context.Results
+                    .Where(r => r.TeacherId == teacher.TeacherId)
+                    .Select(r => r.StudentId)
+                    .Distinct()
+                    .Count()
             };
 
             return View(vm);
+        }
+        public IActionResult Details()
+        {
+            var teachers = _context.Teachers
+                .Include(t => t.User)
+                .ToList();
+
+            return View(teachers);
         }
     }
 }

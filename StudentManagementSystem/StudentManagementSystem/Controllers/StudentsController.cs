@@ -52,11 +52,10 @@ namespace StudentManagementSystem.Controllers
         [RoleAuthorize("Student")]
         public IActionResult Dashboard()
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (string.IsNullOrEmpty(userIdStr))
-                return RedirectToAction("Login", "Account");
+            int? userId = HttpContext.Session.GetInt32("UserId");
 
-            int userId = int.Parse(userIdStr);
+            if (userId == null)
+                return RedirectToAction("Login", "Account");
 
             var student = _context.Students
                 .Include(s => s.User)
@@ -64,7 +63,7 @@ namespace StudentManagementSystem.Controllers
                 .FirstOrDefault(s => s.UserId == userId);
 
             if (student == null)
-                return NotFound();
+                return RedirectToAction("Login", "Account");
 
             var vm = new StudentDashboardVM
             {
