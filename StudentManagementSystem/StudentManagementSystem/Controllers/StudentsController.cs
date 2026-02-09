@@ -12,17 +12,16 @@ namespace StudentManagementSystem.Controllers
     public class StudentsController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public StudentsController(ApplicationDbContext context)
+        private readonly IWebHostEnvironment _environment;
+        public StudentsController(ApplicationDbContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
 
-        // ================= INDEX (SEARCH) =================
+        // ================= INDEX =================
         public IActionResult Index(string searchTerm)
         {
-            ViewBag.SearchTerm = searchTerm;
-
             var students = _context.Students
                 .Include(s => s.User)
                 .Include(s => s.Course)
@@ -30,7 +29,7 @@ namespace StudentManagementSystem.Controllers
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                searchTerm = searchTerm.Trim().ToLower();
+                searchTerm = searchTerm.ToLower();
                 students = students.Where(s =>
                     s.EnrollmentNo.ToLower().Contains(searchTerm) ||
                     s.User.FullName.ToLower().Contains(searchTerm) ||
@@ -39,216 +38,33 @@ namespace StudentManagementSystem.Controllers
 
             return View(students.ToList());
         }
-
         // ================= DETAILS =================
-        public IActionResult Details()
-        {
-            var students = _context.Students
-                .Include(s => s.User)
-                .Include(s => s.Course)
-                .ToList();
-
-            return View(students);
-        }
-        [RoleAuthorize("Student")]
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Dashboard()
-        {
-            var userId = HttpContext.Session.GetInt32("UserId");
-
-            if (userId == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-        // ================= CREATE GET =================
-        public IActionResult Create()
-        {
-            PopulateCreateEditDropdowns();
-            return View();
-        }
-
-        // ================= CREATE POST =================
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Create(Student student, IFormFile PhotoFile)
-        {
-            // ----- Validations -----
-            if (student.UserId == 0)
-                ModelState.AddModelError("UserId", "Please select a user.");
-
-            if (student.CourseId == 0)
-                ModelState.AddModelError("CourseId", "Please select a course.");
-
-            bool studentExists = _context.Students.Any(s => s.UserId == student.UserId);
-            if (studentExists)
-                ModelState.AddModelError("", "A student already exists for the selected user.");
-
-            if (!ModelState.IsValid)
-            {
-                PopulateCreateEditDropdowns();
-                return View(student);
-            }
-
-            // ----- Photo Upload -----
-            if (PhotoFile != null && PhotoFile.Length > 0)
-            {
-                var fileName = Guid.NewGuid() + Path.GetExtension(PhotoFile.FileName);
-                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", fileName);
-
-                using (var stream = new FileStream(path, FileMode.Create))
-                    PhotoFile.CopyTo(stream);
-
-                student.Photo = "/uploads/" + fileName;
-            }
-
-            // ----- Save -----
-            student.CreatedAt = DateTime.Now;
-            _context.Students.Add(student);
-            _context.SaveChanges();
-
-            TempData["msg"] = "Student created successfully!";
-            return RedirectToAction("Index");
-        }
-
-        // ================= EDIT GET =================
-        public IActionResult Edit(int id)
-        {
-            var student = _context.Students
-                .Include(s => s.User)
-                .Include(s => s.Course)
-                .FirstOrDefault(s => s.StudentId == id);
-
-            if (student == null) return NotFound();
-
-            PopulateCreateEditDropdowns();
-            return View(student);
-        }
-
-        // ================= EDIT POST =================
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Edit(Student student, IFormFile PhotoFile)
-        {
-            try
-            {
-                var existingStudent = _context.Students
-                    .Include(s => s.User)
-                    .FirstOrDefault(s => s.StudentId == student.StudentId);
-
-                if (existingStudent == null) return NotFound();
-
-                existingStudent.EnrollmentNo = student.EnrollmentNo;
-                existingStudent.DOB = student.DOB;
-                existingStudent.CourseId = student.CourseId;
-
-                // ----- Photo Upload -----
-                if (PhotoFile != null && PhotoFile.Length > 0)
-                {
-                    if (!string.IsNullOrEmpty(existingStudent.Photo))
-                    {
-                        var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", existingStudent.Photo.TrimStart('/'));
-                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-                    }
-
-                    string fileName = Guid.NewGuid() + Path.GetExtension(PhotoFile.FileName);
-                    string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", fileName);
-
-                    using (var stream = new FileStream(path, FileMode.Create))
-                        PhotoFile.CopyTo(stream);
-
-                    existingStudent.Photo = "/uploads/" + fileName;
-                }
-
-                _context.SaveChanges();
-                TempData["msg"] = "Student updated successfully!";
-                return RedirectToAction("Index");
-            }
-            catch
-            {
-                TempData["msg"] = "Error updating student!";
-                return RedirectToAction("Edit", new { id = student.StudentId });
-            }
-        }
-
-        // ================= DELETE GET =================
-       
-        public IActionResult Delete(int id)
-        {
-            var student = _context.Students
-                .Include(s => s.User)
-                .Include(s => s.Course)
-                .FirstOrDefault(s => s.StudentId == id);
-
-            if (student == null)
-                return NotFound();
-
-            return View(student);
-        }
-
-
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
-        {
-            var student = _context.Students
-                                  .Include(s => s.User)
-                                  .FirstOrDefault(s => s.StudentId == id);
-
-            if (student == null)
-            {
-                TempData["msg"] = "Student not found!";
-                return RedirectToAction("Index");
-            }
-
-            try
-            {
-                // Remove dependent Results first (if any)
-                var results = _context.Results.Where(r => r.StudentId == id).ToList();
-                if (results.Any())
-                    _context.Results.RemoveRange(results);
-
-                // Delete student photo
-                if (!string.IsNullOrEmpty(student.Photo))
-                {
-                    var photoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", student.Photo.TrimStart('/'));
-                    if (System.IO.File.Exists(photoPath))
-                        System.IO.File.Delete(photoPath);
-                }
-
-                // Remove student
-                _context.Students.Remove(student);
-
-                // Remove associated User
-                if (student.User != null)
-                    _context.Users.Remove(student.User);
-
-                _context.SaveChanges();
-
-                TempData["msg"] = "Student and associated user deleted successfully!";
-            }
-            catch
-            {
-                TempData["msg"] = "Error deleting student!";
-            }
-
-            return RedirectToAction("Index");
+        public IActionResult Details() 
+        { 
+            var students = _context.Students 
+                
+                .Include(s => s.User) 
+                .Include(s => s.Course) 
+                .ToList(); return View(students); 
         }
 
         // ================= DASHBOARD =================
+        [RoleAuthorize("Student")]
         public IActionResult Dashboard()
         {
-            string userIdStr = HttpContext.Session.GetString("UserId");
+            var userIdStr = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(userIdStr))
                 return RedirectToAction("Login", "Account");
 
             int userId = int.Parse(userIdStr);
+
             var student = _context.Students
                 .Include(s => s.User)
                 .Include(s => s.Course)
                 .FirstOrDefault(s => s.UserId == userId);
 
-            if (student == null) return NotFound();
+            if (student == null)
+                return NotFound();
 
             var vm = new StudentDashboardVM
             {
@@ -265,149 +81,172 @@ namespace StudentManagementSystem.Controllers
             return View(vm);
         }
 
-
-        [HttpPost]
-        [RoleAuthorize("Admin")]
-        public IActionResult Delete(int id)
-        {
-            if (HttpContext.Session.GetString("Role") != "admin")
-                return Unauthorized();
-
-            var student = _context.Students.Find(id);
-            if (student == null)
-                return NotFound();
-
-            _context.Students.Remove(student);
-            _context.SaveChanges();
-
-            return RedirectToAction("Index");
-        }
-
-        // ================= PRIVATE HELPER =================
-        private void PopulateCreateEditDropdowns()
-        {
-            var assignedUserIds = _context.Students.Select(s => s.UserId).ToList();
-            var availableUsers = _context.Users
-                .Where(u => u.Role == "Student" && !assignedUserIds.Contains(u.UserId))
-                .ToList();
-
-            return View(student);
-        }
-        private string GenerateEnrollmentNo()
-        {
-            var year = DateTime.Now.Year;
-
-            var lastEnrollment = _context.Students
-                .Where(s => s.EnrollmentNo.StartsWith("ENR" + year))
-                .OrderByDescending(s => s.EnrollmentNo)
-                .Select(s => s.EnrollmentNo)
-                .FirstOrDefault();
-
-            int nextNumber = 1;
-
-            if (lastEnrollment != null)
-            {
-                var parts = lastEnrollment.Split('-');
-                nextNumber = int.Parse(parts[1]) + 1;
-            }
-
-            return $"ENR{year}-{nextNumber.ToString("D4")}";
-        }
-
+        // ================= CREATE GET =================
+        [HttpGet]
         public IActionResult Create()
         {
-            var role = HttpContext.Session.GetString("Role") ?? "";
+            var usedUserIds = _context.Students.Select(s => s.UserId).ToList();
 
-            var usedUserIds = _context.Students
-                                      .Select(s => s.UserId)
-                                      .ToList();
-            ViewBag.AutoEnrollment = GenerateEnrollmentNo();
-            var studentUsers = _context.Users
+            ViewBag.Users = _context.Users
                 .Where(u => u.Role == "Student" && !usedUserIds.Contains(u.UserId))
                 .ToList();
 
-            ViewBag.Users = studentUsers;
-            ViewBag.Courses = _context.Courses.ToList();
+            ViewBag.Courses = _context.Courses.ToList();   
 
+            ViewBag.AutoEnrollment = GenerateEnrollmentNo();
+            LoadCreateDropdowns();
             return View();
         }
 
 
+        // ================= CREATE POST =================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Student student, IFormFile PhotoFile)
         {
-            var role = HttpContext.Session.GetString("Role") ?? "";
-
-            if (role != "Admin")
+            if (!ModelState.IsValid)
             {
-                return Unauthorized();
+                LoadCreateDropdowns();
+                return View(student);
             }
 
-            if (ModelState.IsValid)
+            // ✅ PHOTO UPLOAD
+            if (PhotoFile != null && PhotoFile.Length > 0)
             {
-                // Photo upload
-                if (PhotoFile != null && PhotoFile.Length > 0)
+                string uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "students");
+                Directory.CreateDirectory(uploadsFolder);
+
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(PhotoFile.FileName);
+                string filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
                 {
-                    string uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads/students");
-                    Directory.CreateDirectory(uploadsFolder);
-
-                    string fileName = Guid.NewGuid() + Path.GetExtension(PhotoFile.FileName);
-                    string filePath = Path.Combine(uploadsFolder, fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await PhotoFile.CopyToAsync(stream);
-                    }
-
-                    student.Photo = "/uploads/students/" + fileName;
+                    await PhotoFile.CopyToAsync(stream);
                 }
 
-                _context.Students.Add(student);
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction(nameof(Index));
+                // ✅ DB માં ફક્ત path
+                student.Photo = "/uploads/students/" + fileName;
             }
 
-            // Reload dropdowns if validation fails
-            ViewBag.Users = _context.Users.ToList();
+            _context.Students.Add(student);
+            await _context.SaveChangesAsync();
+
+            TempData["msg"] = "Student created successfully!";
+            return RedirectToAction("Index");
+        }
+        private void LoadCreateDropdowns()
+        {
+            var usedUserIds = _context.Students.Select(s => s.UserId).ToList();
+
+            ViewBag.Users = _context.Users
+                .Where(u => u.Role == "Student" && !usedUserIds.Contains(u.UserId))
+                .ToList();
+
+            ViewBag.Courses = _context.Courses.ToList();
+        }
+
+
+
+
+        // ================= EDIT GET =================
+        public IActionResult Edit(int id)
+        {
+            var student = _context.Students
+        .Include(s => s.User)
+        .Include(s => s.Course)
+        .FirstOrDefault(s => s.StudentId == id);
+
+            if (student == null)
+                return NotFound();
+
             ViewBag.Courses = _context.Courses.ToList();
 
             return View(student);
         }
-        public IActionResult Edit()
-        {
-            return View();
-        }
+
+        // ================= EDIT POST =================
         [HttpPost]
-        public IActionResult Edit(Student student, IFormFile PhotoFile)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Student student, IFormFile PhotoFile)
         {
-            try
+            var existing = _context.Students.FirstOrDefault(s => s.StudentId == student.StudentId);
+            if (existing == null) return NotFound();
+
+            existing.EnrollmentNo = student.EnrollmentNo;
+            existing.DOB = student.DOB;
+            existing.CourseId = student.CourseId;
+            existing.Semester = student.Semester;
+
+            if (PhotoFile != null && PhotoFile.Length > 0)
             {
-                if (PhotoFile != null && PhotoFile.Length > 0)
-                {
-                    string fileName = Guid.NewGuid() + Path.GetExtension(PhotoFile.FileName);
-                    string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Photos", fileName);
+                string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                Directory.CreateDirectory(folder);
 
-                    using (var stream = new FileStream(path, FileMode.Create))
-                    {
-                        PhotoFile.CopyTo(stream);
-                    }
+                string fileName = Guid.NewGuid() + Path.GetExtension(PhotoFile.FileName);
+                string path = Path.Combine(folder, fileName);
 
-                    student.Photo = fileName;
-                }
+                using var stream = new FileStream(path, FileMode.Create);
+                await PhotoFile.CopyToAsync(stream);
 
-                _context.Update(student);
-                _context.SaveChanges();
-
-                TempData["msg"] = "Successfully edited";
-                return RedirectToAction("Index");
+                existing.Photo = "/uploads/" + fileName;
             }
-            catch
-            {
-                TempData["msg"] = "Sorry! Try again";
-                return RedirectToAction("Edit", new { id = student.StudentId });
-            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ================= DELETE GET =================
+        public IActionResult Delete(int id)
+        {
+            var student = _context.Students
+                .Include(s => s.User)
+                .FirstOrDefault(s => s.StudentId == id);
+
+            if (student == null) return NotFound();
+            return View(student);
+        }
+
+        // ================= DELETE POST =================
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            var student = _context.Students
+                .Include(s => s.User)
+                .FirstOrDefault(s => s.StudentId == id);
+
+            if (student == null) return NotFound();
+
+            _context.Students.Remove(student);
+            if (student.User != null)
+                _context.Users.Remove(student.User);
+
+            _context.SaveChanges();
+            TempData["msg"] = "Student deleted successfully!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ================= HELPERS =================
+        private void LoadDropdowns()
+        {
+            var usedUserIds = _context.Students.Select(s => s.UserId).ToList();
+
+            ViewBag.Users = _context.Users
+                .Where(u => u.Role == "Student" && !usedUserIds.Contains(u.UserId))
+                .ToList();
+
+            ViewBag.Courses = _context.Courses.ToList();
+        }
+
+        private string GenerateEnrollmentNo()
+        {
+            int year = DateTime.Now.Year;
+            var last = _context.Students
+                .OrderByDescending(s => s.StudentId)
+                .FirstOrDefault();
+
+            int next = last == null ? 1 : last.StudentId + 1;
+            return $"ENR{year}-{next:D4}";
         }
     }
 }

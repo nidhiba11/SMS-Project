@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Add Student";
-    Layout = "_Layout"; // Keep your main layout
+    Layout = "_Layout";
 }
 
 @section Styles {
@@ -49,19 +49,15 @@
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            document.getElementById("UserId").addEventListener("change", function () {
-                const selected = this.options[this.selectedIndex];
-                const name = selected.getAttribute("data-name");
-                const email = selected.getAttribute("data-email");
-
-                document.getElementById("FullName").value = name || "";
-                document.getElementById("Email").value = email || "";
-
-                document.getElementById("HiddenFullName").value = name || "";
-                document.getElementById("HiddenEmail").value = email || "";
+            const userSelect = document.getElementById("UserId");
+            userSelect.addEventListener("change", function () {
+                const opt = this.options[this.selectedIndex];
+                document.getElementById("FullName").value = opt.dataset.fullname || "";
+                document.getElementById("Email").value = opt.dataset.email || "";
             });
         });
     </script>
+
     <partial name="_ValidationScriptsPartial" />
 }
 
@@ -72,55 +68,38 @@
             <div class="card erp-card border-0">
 
                 <div class="erp-header d-flex flex-column justify-content-center align-items-center text-white">
-                    <i class="bi bi-person-plus-fill" style="font-size:32px;"></i>
+                    <i class="bi bi-person-plus-fill fs-3"></i>
                     <h5 class="mb-0 fw-semibold">Add Student</h5>
                 </div>
 
                 <div class="card-body p-4">
 
-                    <!-- TempData Message -->
-                    @if (TempData["msg"] != null)
-                    {
-                        <div class="alert alert-success">
-                            @TempData["msg"]
-                        </div>
-                    }
-
-                    <!-- Validation Summary -->
                     <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
                     <form asp-action="Create" method="post" enctype="multipart/form-data">
-                        <input type="hidden" asp-for="StudentId" />
 
-                        <!-- User -->
-                        <div class="mb-3">
-                            <label class="erp-label">User</label>
-                            <select asp-for="UserId" class="form-select erp-select">
-                                <option value="">-- Select Student User --</option>
-                                @foreach (var user in ViewBag.Users)
-                                {
-                                    <option value="@user.UserId"
-                                            data-fullname="@user.FullName"
-                                            data-email="@user.Email">
-                                        @user.Username
-                                    </option>
-                                }
+                        <div class="form-group">
+                            <label>Select Student</label>
+
+                            <select asp-for="UserId"
+                                    asp-items="ViewBag.StudentUsers"
+                                    class="form-control">
+                                <option value="">-- Select Student --</option>
                             </select>
+
                             <span asp-validation-for="UserId" class="text-danger"></span>
                         </div>
 
-                        <!-- Full Name -->
+                        <!-- Full Name (display only) -->
                         <div class="mb-3">
                             <label class="erp-label">Full Name</label>
                             <input type="text" id="FullName" class="form-control erp-input" disabled />
-                            <input type="hidden" name="FullName" id="HiddenFullName" />
                         </div>
 
-                        <!-- Email -->
+                        <!-- Email (display only) -->
                         <div class="mb-3">
                             <label class="erp-label">Email</label>
                             <input type="text" id="Email" class="form-control erp-input" disabled />
-                            <input type="hidden" name="Email" id="HiddenEmail" />
                         </div>
 
                         <!-- Course -->
@@ -142,17 +121,15 @@
                             <input asp-for="EnrollmentNo" class="form-control erp-input" />
                         </div>
 
-                        <!-- Semester + DOB -->
+                        <!-- Semester & DOB -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="erp-label">Semester</label>
                                 <input asp-for="Semester" class="form-control erp-input" />
-                                <span asp-validation-for="Semester" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="erp-label">DOB</label>
                                 <input asp-for="DOB" type="date" class="form-control erp-input" />
-                                <span asp-validation-for="DOB" class="text-danger"></span>
                             </div>
                         </div>
 
@@ -163,16 +140,17 @@
                         </div>
 
                         <div class="d-flex justify-content-end gap-3">
-                            <a asp-action="Details" class="btn btn-outline-secondary rounded-pill px-4">
-                                <i class="bi bi-arrow-left me-1"></i> Back
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+                                Back
                             </a>
                             <button type="submit" class="btn btn-erp">
-                                <i class="bi bi-save me-1"></i> Save Student
+                                Save Student
                             </button>
                         </div>
-                    </form>
-                </div>
 
+                    </form>
+
+                </div>
             </div>
 
         </div>
