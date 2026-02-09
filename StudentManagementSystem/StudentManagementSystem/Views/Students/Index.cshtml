@@ -24,9 +24,12 @@
         </form>
 
         <!-- Manage Students Button -->
-        <a asp-action="Details" class="btn btn-manage-students">
-            <i class="bi bi-plus-lg me-1"></i> Manage Students
-        </a>
+        @if (Context.Session.GetString("Role") == "Admin")
+        {
+            <a asp-action="Details" class="btn btn-manage-students">
+                <i class="bi bi-plus-lg me-1"></i> Manage Students
+            </a>
+        }
     </div>
 
     <!-- Student Cards -->

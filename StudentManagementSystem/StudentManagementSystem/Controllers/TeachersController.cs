@@ -5,6 +5,9 @@ using StudentManagementSystem.Models.ViewModels;
 
 namespace StudentManagementSystem.Controllers
 {
+    [RoleAuthorize("Admin", "Teacher", "Student")]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+
     public class TeachersController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -21,6 +24,8 @@ namespace StudentManagementSystem.Controllers
 
             return View(teachers);
         }
+        [RoleAuthorize("Teacher")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Dashboard()
         {
             string userIdStr = HttpContext.Session.GetString("UserId");
@@ -67,6 +72,7 @@ namespace StudentManagementSystem.Controllers
             return View(vm);
         }
         [HttpPost]
+       // [RoleAuthorize("Admin")]
         public IActionResult Edit(Teacher teacher, IFormFile PhotoFile)
         {
             try
@@ -96,6 +102,7 @@ namespace StudentManagementSystem.Controllers
                 return RedirectToAction("Edit", new { id = teacher.TeacherId });
             }
         }
+        [RoleAuthorize("Admin")]
         public IActionResult Details()
         {
             var teachers = _context.Teachers

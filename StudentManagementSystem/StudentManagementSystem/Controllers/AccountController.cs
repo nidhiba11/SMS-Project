@@ -7,25 +7,22 @@ namespace StudentManagementSystem.Controllers
     public class AccountController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public AccountController(ApplicationDbContext context)
+        private readonly IConfiguration _config;
+        public AccountController(ApplicationDbContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
         }
         
         // LOGIN PAGE
         [HttpGet]
         public IActionResult Login()
         {
-            if (Request.Cookies.ContainsKey("RememberEmail"))
-            {
-                ViewBag.RememberedEmail = Request.Cookies["RememberEmail"];
-            }
             return View();
         }
 
         [HttpPost]
-        public IActionResult Login(LoginViewModel model, bool RememberMe)
+        public IActionResult Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
@@ -41,24 +38,12 @@ namespace StudentManagementSystem.Controllers
                 return View(model);
             }
 
-            // SESSION
-            HttpContext.Session.SetInt32("UserId", user.UserId);
-            HttpContext.Session.SetString("UserRole", user.Role);
-            HttpContext.Session.SetString("UserName", user.FullName);
+            // Clear old session
+            HttpContext.Session.Clear();
 
-            // 👉 REMEMBER ME COOKIE
-            if (RememberMe)
-            {
-                CookieOptions options = new CookieOptions
-                {
-                    Expires = DateTime.Now.AddDays(7)
-                };
-                Response.Cookies.Append("RememberEmail", user.Email, options);
-            }
-            else
-            {
-                Response.Cookies.Delete("RememberEmail");
-            }
+            // Store correct values
+            HttpContext.Session.SetString("UserId", user.UserId.ToString());
+            HttpContext.Session.SetString("Role", user.Role);
 
             // Redirect by role
             if (user.Role == "Admin")
@@ -70,10 +55,16 @@ namespace StudentManagementSystem.Controllers
             return RedirectToAction("Dashboard", "Students");
         }
 
+
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
-            return RedirectToAction("Login");
+
+            Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+            Response.Headers["Pragma"] = "no-cache";
+            Response.Headers["Expires"] = "0";
+
+            return RedirectToAction("Login", "Account");
         }
         [HttpGet]
         public IActionResult Register()
@@ -120,21 +111,23 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpPost]
-        public IActionResult ForgotPassword(ForgotPasswordViewModel model)
+        public IActionResult ForgotPassword(string email)
         {
-            if (!ModelState.IsValid)
-                return View(model);
-
-            var user = _context.Users.FirstOrDefault(u => u.Email == model.Email);
-
-            if (user == null)
+            if (string.IsNullOrEmpty(email))
             {
-                ViewBag.Message = "Email not found";
+                ViewBag.Error = "Email is required";
                 return View();
             }
 
-            // SIMPLE PROJECT LOGIC
-            ViewBag.Message = $"Your password is: {user.Password}";
+            var user = _context.Users.FirstOrDefault(u => u.Email == email && u.IsActive);
+
+            if (user == null)
+            {
+                ViewBag.Error = "Email not found";
+                return View();
+            }
+
+            ViewBag.Success = "Your password is: " + user.Password;
 
             return View();
         }

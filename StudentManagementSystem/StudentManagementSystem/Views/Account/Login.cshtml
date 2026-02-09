@@ -61,12 +61,8 @@
 
                     <!-- Remember + Forgot -->
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="RememberMe">
-                            <label class="form-check-label">Remember me</label>
-                        </div>
-                        <a asp-action="ForgotPassword" class="text-success text-decoration-none">
-                            Forgot password?
+                        <a asp-action="ForgotPassword" asp-controller="Account">
+                            Forgot Password?
                         </a>
                     </div>
 

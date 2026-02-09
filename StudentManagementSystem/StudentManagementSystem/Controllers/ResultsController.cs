@@ -43,6 +43,7 @@ namespace StudentManagementSystem.Controllers
 
             return View(result);
         }
+        [RoleAuthorize("Teacher")]
         public IActionResult TeacherIndex()
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -70,7 +71,7 @@ namespace StudentManagementSystem.Controllers
 
             return View(results);
         }
-
+        [RoleAuthorize("Teacher", "Admin")]
         public IActionResult Manage(int examId)
         {
             var teacherId = 1;
@@ -83,7 +84,7 @@ namespace StudentManagementSystem.Controllers
 
             return View(results);
         }
-
+        [RoleAuthorize("Admin")]
         public IActionResult AdminIndex()
         {
             var results = _context.Results

@@ -15,13 +15,6 @@ namespace StudentManagementSystem.Controllers
         }
         public async Task<IActionResult> Index()
         {
-            /* var exam = _context.Exams
-             .Include(s => s.Results)
-             .Include(s => s.Course)
-             .ToList();
-
-             return View(exam); */
-
             var examsQuery = _context.Exams
            .Include(e => e.Course)
            .AsQueryable();
@@ -31,8 +24,6 @@ namespace StudentManagementSystem.Controllers
             {
                 examsQuery = examsQuery.Where(e => e.IsPublished);
             }
-
-            // ADMIN & TEACHER: all exams
             var exams = await examsQuery
                 .OrderByDescending(e => e.ExamDate)
                 .ToListAsync();
@@ -50,15 +41,16 @@ namespace StudentManagementSystem.Controllers
                 return NotFound();
             }
 
-            // STUDENT SAFETY: cannot see unpublished exam details
-            //    if (User.IsInRole("Student") && !exam.IsPublished)
-            //  {
-            //    return Forbid();
-            //}
+            //STUDENT SAFETY: cannot see unpublished exam details
+            if (User.IsInRole("Student") && !exam.IsPublished)
+            {
+                return Forbid();
+            }
 
             return View(exam);
         }
-        [Authorize(Roles = "Admin,Teacher")]
+
+        [RoleAuthorize("Admin","Teacher")]
         public IActionResult Create()
         {
             ViewBag.Courses = _context.Courses.ToList();
@@ -66,7 +58,7 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Teacher")]
+        [RoleAuthorize("Admin","Teacher")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Exam exam)
         {
@@ -82,10 +74,7 @@ namespace StudentManagementSystem.Controllers
             return View(exam);
         }
 
-        // ============================
-        // EDIT (ADMIN / TEACHER)
-        // ============================
-        [Authorize(Roles = "Admin,Teacher")]
+        [RoleAuthorize("Admin","Teacher")]
         public async Task<IActionResult> Edit(int id)
         {
             var exam = await _context.Exams.FindAsync(id);
@@ -99,7 +88,7 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Teacher")]
+        [RoleAuthorize("Admin", "Teacher")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Exam exam)
         {

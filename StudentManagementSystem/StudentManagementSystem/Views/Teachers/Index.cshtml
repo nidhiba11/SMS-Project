@@ -26,9 +26,12 @@
             </form>
 
             <!-- Manage Button -->
+            @if (Context.Session.GetString("Role") == "Admin")
+        {
             <a asp-action="Details" class="btn btn-manage-teachers">
                 <i class="bi bi-plus-lg me-1"></i> Manage Teachers
             </a>
+        }
         </div>
     </div>
 

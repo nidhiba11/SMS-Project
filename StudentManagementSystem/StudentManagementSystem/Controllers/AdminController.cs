@@ -3,6 +3,8 @@ using StudentManagementSystem.Models.ViewModels;
 
 namespace StudentManagementSystem.Controllers
 {
+    [RoleAuthorize("Admin")]
+
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -16,6 +18,7 @@ namespace StudentManagementSystem.Controllers
         {
             return View();
         }
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult AdminDashboard()
         {
             //  if (HttpContext.Session.GetString("Role") != "Admin")

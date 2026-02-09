@@ -36,14 +36,12 @@ body {
 ================================ */
 .sidebar {
     position: fixed;
-    top: 0;
+    top: 56px; /* height of navbar */
     left: 0;
-    width: 260px;
-    height: 100vh;
-    background-color: var(--sidebar-bg);
-    overflow: hidden; /* sidebar locked */
-    z-index: 1000;
-    padding-top: 56px; /* navbar height */
+    width: 240px;
+    height: calc(100vh - 56px);
+    background-color: #063f3f;
+    overflow-y: auto;
 }
 
     .sidebar .nav-link {
@@ -67,12 +65,11 @@ body {
    MAIN CONTENT (ONLY THIS SCROLLS)
 ================================ */
 .main-content {
-    margin-left: 260px; /* sidebar width */
     margin-top: 56px; /* navbar height */
-    height: calc(100vh - 56px);
-    overflow-y: auto; /* content scroll */
-    padding: 24px;
-    background-color: var(--bg-page);
+    margin-left: 240px; /* EXACT sidebar width */
+    padding: 24px; /* inner spacing only */
+    background-color: #f6f9f9;
+    min-height: calc(100vh - 56px);
 }
 
 /* ================================

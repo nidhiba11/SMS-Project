@@ -13,9 +13,21 @@ namespace StudentManagementSystem.Controllers
         {
             return View(_context.Courses.Where(c => c.IsActive).ToList());
         }
+        [RoleAuthorize("Admin")]
         public IActionResult Details()
         {
             return View(_context.Courses.ToList());
+        }
+       // [RoleAuthorize("Admin")]
+        public IActionResult create()
+        {
+            return View();
+        }
+        [HttpPost]
+       // [RoleAuthorize("Admin")]
+        public IActionResult Create()
+        {
+            return View();
         }
     }
 }

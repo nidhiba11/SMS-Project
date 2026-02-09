@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace StudentManagementSystem.Controllers
 {
+    [RoleAuthorize("Admin", "Teacher")]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+
     public class StudentsController : Controller
     {
 
@@ -16,6 +19,7 @@ namespace StudentManagementSystem.Controllers
             _context = context;
 
         }
+        [RoleAuthorize("Admin", "Teacher")]
         public IActionResult Index()
         {
             var students = _context.Students
@@ -26,58 +30,34 @@ namespace StudentManagementSystem.Controllers
             return View(students);
 
         }
-       public IActionResult Dashboard()
+        [RoleAuthorize("Student")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Dashboard()
         {
-            // Logged-in user id from session
-            //int userId = Convert.ToInt32(HttpContext.Session.GetString("UserId"));
-            string userIdStr = HttpContext.Session.GetString("UserId");
-
-            if (string.IsNullOrEmpty(userIdStr))
-                return RedirectToAction("Login", "Account");
-
-            int userId = int.Parse(userIdStr); 
+            int userId = int.Parse(HttpContext.Session.GetString("UserId"));
 
             var student = _context.Students
-                .Include(s => s.Course)
-                .Include(s => s.User)
                 .FirstOrDefault(s => s.UserId == userId);
 
             if (student == null)
-                return NotFound();
+                return RedirectToAction("Login", "Account");
 
-            StudentDashboardVM vm = new StudentDashboardVM
+            var vm = new StudentDashboardVM
             {
-                FullName = student.User.FullName,
+                StudentId = student.StudentId,
                 EnrollmentNo = student.EnrollmentNo,
-                CourseName = student.Course.CourseName,
                 Semester = student.Semester,
+                DOB = student.DOB,
                 Photo = student.Photo,
-
-                TotalExams = _context.Exams
-                    .Where(e => e.CourseId == student.CourseId &&
-                                e.Semester == student.Semester)
-                    .Count(),
-
-                PublishedResults = _context.Results
-                    .Where(r => r.StudentId == student.StudentId &&
-                                r.IsActive)
-                    .Count(),
-
-                PassedExams = _context.Results
-                    .Where(r => r.StudentId == student.StudentId &&
-                                r.IsPass)
-                    .Count(),
-
-                FailedExams = _context.Results
-                    .Where(r => r.StudentId == student.StudentId &&
-                                !r.IsPass)
-                    .Count()
+                CreatedAt = student.CreatedAt,
+                Age = DateTime.Now.Year - student.DOB.Year
             };
 
             return View(vm);
         }   
 
         [HttpPost]
+        [RoleAuthorize("Admin")]
         public IActionResult Delete(int id)
         {
             if (HttpContext.Session.GetString("Role") != "admin")
@@ -92,7 +72,7 @@ namespace StudentManagementSystem.Controllers
 
             return RedirectToAction("Index");
         }
-
+        [RoleAuthorize("Admin")]
         public IActionResult Details()
         {
             var student = _context.Students
@@ -102,51 +82,52 @@ namespace StudentManagementSystem.Controllers
 
             return View(student);
         }
-    /*    public IActionResult Create()
-        {
-            ViewBag.Users = _context.Users.Where(u => u.Role == "Student").ToList();
-            ViewBag.Courses = _context.Courses.Where(c => c.IsActive).ToList();
-            return View();
-        }
-
-        // CREATE POST
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Create(Student student, IFormFile PhotoFile)
-        {
-            if (!ModelState.IsValid)
+        /*    public IActionResult Create()
             {
                 ViewBag.Users = _context.Users.Where(u => u.Role == "Student").ToList();
                 ViewBag.Courses = _context.Courses.Where(c => c.IsActive).ToList();
-                return View(student);
+                return View();
             }
 
-            if (PhotoFile != null && PhotoFile.Length > 0)
+            // CREATE POST
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public IActionResult Create(Student student, IFormFile PhotoFile)
             {
-                var uploads = Path.Combine(_env.WebRootPath, "uploads");
-                Directory.CreateDirectory(uploads);
+                if (!ModelState.IsValid)
+                {
+                    ViewBag.Users = _context.Users.Where(u => u.Role == "Student").ToList();
+                    ViewBag.Courses = _context.Courses.Where(c => c.IsActive).ToList();
+                    return View(student);
+                }
 
-                var fileName = Guid.NewGuid() + Path.GetExtension(PhotoFile.FileName);
-                var path = Path.Combine(uploads, fileName);
+                if (PhotoFile != null && PhotoFile.Length > 0)
+                {
+                    var uploads = Path.Combine(_env.WebRootPath, "uploads");
+                    Directory.CreateDirectory(uploads);
 
-                using var stream = new FileStream(path, FileMode.Create);
-                PhotoFile.CopyTo(stream);
+                    var fileName = Guid.NewGuid() + Path.GetExtension(PhotoFile.FileName);
+                    var path = Path.Combine(uploads, fileName);
 
-                student.Photo = "/uploads/" + fileName;
-            }
+                    using var stream = new FileStream(path, FileMode.Create);
+                    PhotoFile.CopyTo(stream);
 
-            student.CreatedAt = DateTime.Now;
-            _context.Students.Add(student);
-            _context.SaveChanges();
+                    student.Photo = "/uploads/" + fileName;
+                }
 
-            return RedirectToAction(nameof(Details));
-        }  */
+                student.CreatedAt = DateTime.Now;
+                _context.Students.Add(student);
+                _context.SaveChanges();
 
+                return RedirectToAction(nameof(Details));
+            }  */
+       // [RoleAuthorize("Admin")]
         public IActionResult Edit()
         {
             return View();
         }
         [HttpPost]
+       // [RoleAuthorize("Admin")]
         public IActionResult Edit(Student student, IFormFile PhotoFile)
         {
             try
