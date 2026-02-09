@@ -1,0 +1,69 @@
+﻿/* ===== ERP Card ===== */
+.erp-card {
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    overflow: hidden;
+    background: #fff;
+}
+
+/* ===== Header ===== */
+.erp-header {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    height: 120px;
+    border-radius: 0 0 24px 24px;
+    text-align: center;
+}
+
+    .erp-header i {
+        margin-bottom: 6px;
+    }
+
+    .erp-header h6 {
+        font-size: 1.1rem;
+        letter-spacing: 0.4px;
+    }
+
+/* ===== Labels ===== */
+.erp-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+/* ===== Inputs & Selects ===== */
+.erp-input,
+.erp-select {
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    border: 1px solid #d1d5db;
+}
+
+    .erp-input:focus,
+    .erp-select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 0.15rem rgba(37, 99, 235, 0.25);
+    }
+
+/* ===== Buttons ===== */
+.btn-erp {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    border-radius: 999px;
+    padding: 10px 26px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+    .btn-erp:hover {
+        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        color: #fff;
+    }
+
+/* ===== Disabled look ===== */
+input[readonly],
+select:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+}

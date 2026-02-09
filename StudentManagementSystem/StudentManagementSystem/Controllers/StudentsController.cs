@@ -6,17 +6,15 @@ using Microsoft.AspNetCore.Http;
 
 namespace StudentManagementSystem.Controllers
 {
-    [RoleAuthorize("Admin", "Teacher")]
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-
     public class StudentsController : Controller
     {
 
         private readonly ApplicationDbContext _context;
-       // private readonly IWebHostEnvironment _env;
-        public StudentsController(ApplicationDbContext context)
+        private readonly IWebHostEnvironment _environment;
+        public StudentsController(ApplicationDbContext context, IWebHostEnvironment env) 
         {
             _context = context;
+            _environment = env;
 
         }
         [RoleAuthorize("Admin", "Teacher")]
@@ -34,13 +32,19 @@ namespace StudentManagementSystem.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Dashboard()
         {
-            int userId = int.Parse(HttpContext.Session.GetString("UserId"));
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
             var student = _context.Students
+                .Include(s => s.User)
                 .FirstOrDefault(s => s.UserId == userId);
 
             if (student == null)
-                return RedirectToAction("Login", "Account");
+                return NotFound("Student not found for this user");
 
             var vm = new StudentDashboardVM
             {
@@ -50,11 +54,13 @@ namespace StudentManagementSystem.Controllers
                 DOB = student.DOB,
                 Photo = student.Photo,
                 CreatedAt = student.CreatedAt,
+                StudentName = student.User.FullName,
                 Age = DateTime.Now.Year - student.DOB.Year
             };
 
             return View(vm);
-        }   
+        }
+
 
         [HttpPost]
         [RoleAuthorize("Admin")]
@@ -82,52 +88,93 @@ namespace StudentManagementSystem.Controllers
 
             return View(student);
         }
-        /*    public IActionResult Create()
+        private string GenerateEnrollmentNo()
+        {
+            var year = DateTime.Now.Year;
+
+            var lastEnrollment = _context.Students
+                .Where(s => s.EnrollmentNo.StartsWith("ENR" + year))
+                .OrderByDescending(s => s.EnrollmentNo)
+                .Select(s => s.EnrollmentNo)
+                .FirstOrDefault();
+
+            int nextNumber = 1;
+
+            if (lastEnrollment != null)
             {
-                ViewBag.Users = _context.Users.Where(u => u.Role == "Student").ToList();
-                ViewBag.Courses = _context.Courses.Where(c => c.IsActive).ToList();
-                return View();
+                var parts = lastEnrollment.Split('-');
+                nextNumber = int.Parse(parts[1]) + 1;
             }
 
-            // CREATE POST
-            [HttpPost]
-            [ValidateAntiForgeryToken]
-            public IActionResult Create(Student student, IFormFile PhotoFile)
-            {
-                if (!ModelState.IsValid)
-                {
-                    ViewBag.Users = _context.Users.Where(u => u.Role == "Student").ToList();
-                    ViewBag.Courses = _context.Courses.Where(c => c.IsActive).ToList();
-                    return View(student);
-                }
+            return $"ENR{year}-{nextNumber.ToString("D4")}";
+        }
 
+        public IActionResult Create()
+        {
+            var role = HttpContext.Session.GetString("Role") ?? "";
+
+            var usedUserIds = _context.Students
+                                      .Select(s => s.UserId)
+                                      .ToList();
+            ViewBag.AutoEnrollment = GenerateEnrollmentNo();
+            var studentUsers = _context.Users
+                .Where(u => u.Role == "Student" && !usedUserIds.Contains(u.UserId))
+                .ToList();
+
+            ViewBag.Users = studentUsers;
+            ViewBag.Courses = _context.Courses.ToList();
+
+            return View();
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Student student, IFormFile PhotoFile)
+        {
+            var role = HttpContext.Session.GetString("Role") ?? "";
+
+            if (role != "Admin")
+            {
+                return Unauthorized();
+            }
+
+            if (ModelState.IsValid)
+            {
+                // Photo upload
                 if (PhotoFile != null && PhotoFile.Length > 0)
                 {
-                    var uploads = Path.Combine(_env.WebRootPath, "uploads");
-                    Directory.CreateDirectory(uploads);
+                    string uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads/students");
+                    Directory.CreateDirectory(uploadsFolder);
 
-                    var fileName = Guid.NewGuid() + Path.GetExtension(PhotoFile.FileName);
-                    var path = Path.Combine(uploads, fileName);
+                    string fileName = Guid.NewGuid() + Path.GetExtension(PhotoFile.FileName);
+                    string filePath = Path.Combine(uploadsFolder, fileName);
 
-                    using var stream = new FileStream(path, FileMode.Create);
-                    PhotoFile.CopyTo(stream);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await PhotoFile.CopyToAsync(stream);
+                    }
 
-                    student.Photo = "/uploads/" + fileName;
+                    student.Photo = "/uploads/students/" + fileName;
                 }
 
-                student.CreatedAt = DateTime.Now;
                 _context.Students.Add(student);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
-                return RedirectToAction(nameof(Details));
-            }  */
-       // [RoleAuthorize("Admin")]
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Reload dropdowns if validation fails
+            ViewBag.Users = _context.Users.ToList();
+            ViewBag.Courses = _context.Courses.ToList();
+
+            return View(student);
+        }
         public IActionResult Edit()
         {
             return View();
         }
         [HttpPost]
-       // [RoleAuthorize("Admin")]
         public IActionResult Edit(Student student, IFormFile PhotoFile)
         {
             try

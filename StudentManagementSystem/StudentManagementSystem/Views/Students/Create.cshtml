@@ -1,9 +1,7 @@
-﻿@using Microsoft.AspNetCore.Http
-@model StudentManagementSystem.Models.Student
+﻿@model StudentManagementSystem.Models.Student
 
 @{
     ViewData["Title"] = "Add Student";
-    var role = Context.Session.GetString("Role") ?? "";
 }
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -17,7 +15,7 @@
     }
 
     .erp-header {
-        background: linear-gradient(135deg, #003b3f, #0fa4a9);
+        background: linear-gradient(135deg, #003b3f, #0d6f6a);
         border-radius: 18px 18px 0 0;
         height: 90px;
     }
@@ -45,19 +43,38 @@
     }
 </style>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const userSelect = document.getElementById("UserId");
+
+        userSelect.addEventListener("change", function () {
+
+            const selectedOption = this.options[this.selectedIndex];
+
+            const fullName = selectedOption.getAttribute("data-fullname");
+            const email = selectedOption.getAttribute("data-email");
+
+            document.getElementById("FullName").value = fullName || "";
+            document.getElementById("Email").value = email || "";
+
+            document.getElementById("HiddenFullName").value = fullName || "";
+            document.getElementById("HiddenEmail").value = email || "";
+        });
+    });
+</script>
+
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-10">
 
             <div class="card erp-card border-0">
 
-                <!-- Header -->
                 <div class="erp-header d-flex flex-column justify-content-center align-items-center text-white">
                     <i class="bi bi-person-plus-fill" style="font-size:32px;"></i>
                     <h6 class="mb-0 fw-semibold">Add Student</h6>
                 </div>
 
-                <!-- Body -->
                 <div class="card-body p-4">
 
                     <form asp-action="Create" method="post" enctype="multipart/form-data">
@@ -65,73 +82,78 @@
                         <!-- User -->
                         <div class="mb-3">
                             <label class="erp-label">User</label>
-                            <select asp-for="UserId"
-                                    class="form-select erp-select"
-                                    disabled="@(role != "Admin")">
-                                <option value="">-- Select User --</option>
+                            <select asp-for="UserId" class="form-select erp-select">
+                                <option value="">-- Select Student User --</option>
+                                @foreach (var user in ViewBag.Users)
+                                {
+                                    <option value="@user.UserId"
+                                            data-fullname="@user.FullName"
+                                            data-email="@user.Email">
+                                        @user.Username
+                                    </option>
+                                }
                             </select>
+                        </div>
+
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label class="erp-label">Full Name</label>
+                            <input type="text" id="FullName" class="form-control erp-input" disabled />
+                            <input type="hidden" name="FullName" id="HiddenFullName" />
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label class="erp-label">Email</label>
+                            <input type="text" id="Email" class="form-control erp-input" disabled />
+                            <input type="hidden" name="Email" id="HiddenEmail" />
                         </div>
 
                         <!-- Course -->
                         <div class="mb-3">
                             <label class="erp-label">Course</label>
-                            <select asp-for="CourseId"
-                                    class="form-select erp-select"
-                                    disabled="@(role != "Admin")">
+                            <select asp-for="CourseId" class="form-select erp-select">
                                 <option value="">-- Select Course --</option>
+                                @foreach (var course in ViewBag.Courses)
+                                {
+                                    <option value="@course.CourseId">@course.CourseName</option>
+                                }
                             </select>
                         </div>
 
                         <!-- Enrollment -->
                         <div class="mb-3">
                             <label class="erp-label">Enrollment No</label>
-                            <input asp-for="EnrollmentNo"
-                                   class="form-control erp-input"
-                                   readonly="@(role != "Admin")" />
+                            <input asp-for="EnrollmentNo" class="form-control erp-input" />
                         </div>
 
-                        <!-- Row -->
+                        <!-- Semester + DOB -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="erp-label">Semester</label>
-                                <input asp-for="Semester"
-                                       class="form-control erp-input"
-                                       readonly="@(role != "Admin")" />
+                                <input asp-for="Semester" class="form-control erp-input" />
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label class="erp-label">DOB</label>
-                                <input asp-for="DOB"
-                                       type="date"
-                                       class="form-control erp-input"
-                                       readonly="@(role != "Admin")" />
+                                <input asp-for="DOB" type="date" class="form-control erp-input" />
                             </div>
                         </div>
 
                         <!-- Photo -->
-                        @if (role == "Admin")
-                        {
-                            <div class="mb-4">
-                                <label class="erp-label">Photo</label>
-                                <input type="file"
-                                       name="PhotoFile"
-                                       class="form-control erp-input" />
-                            </div>
-                        }
+                        <div class="mb-4">
+                            <label class="erp-label">Photo</label>
+                            <input type="file" name="PhotoFile" class="form-control erp-input" />
+                        </div>
 
-                        <!-- Buttons -->
                         <div class="d-flex justify-content-end gap-3">
-                            <a asp-action="Details"
-                               class="btn btn-outline-secondary rounded-pill px-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
                                 Back
                             </a>
 
-                            @if (role == "Admin")
-                            {
-                                <button type="submit" class="btn btn-erp">
-                                    <i class="bi bi-save me-1"></i> Save Student
-                                </button>
-                            }
+                            <button type="submit" class="btn btn-erp">
+                                <i class="bi bi-save me-1"></i> Save Student
+                            </button>
                         </div>
 
                     </form>

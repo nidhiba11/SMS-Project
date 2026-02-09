@@ -40,10 +40,9 @@ namespace StudentManagementSystem.Controllers
 
             // Clear old session
             HttpContext.Session.Clear();
-
-            // Store correct values
-            HttpContext.Session.SetString("UserId", user.UserId.ToString());
+            HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetString("Role", user.Role);
+            HttpContext.Session.SetString("FullName", user.FullName);
 
             // Redirect by role
             if (user.Role == "Admin")

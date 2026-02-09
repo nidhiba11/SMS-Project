@@ -86,7 +86,7 @@
             {
                 <li class="nav-item">
                     <a class="nav-link @(currentController == "Teachers" && currentAction == "Index" ? "active" : "")"
-                       asp-controller="Teachers" asp-action="Index">
+                       asp-controller="Teachers" asp-action="Details">
                         Teachers
                     </a>
                 </li>
@@ -129,3 +129,6 @@
     @RenderSection("Scripts", required: false)
 </body>
 </html>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

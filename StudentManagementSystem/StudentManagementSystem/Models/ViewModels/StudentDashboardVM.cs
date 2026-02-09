@@ -8,8 +8,7 @@
         public DateTime DOB { get; set; }
         public string Photo { get; set; }
         public DateTime CreatedAt { get; set; }
-
-        // Derived (allowed – calculated, not stored)
+        public string StudentName { get; set; }
         public int Age { get; set; }
     }
 }

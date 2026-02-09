@@ -1,28 +1,201 @@
 ﻿@model StudentManagementSystem.Models.ViewModels.StudentDashboardVM
-<link rel="stylesheet" href="~/css/student-dashboard.css" />
+@{
+    Layout = null;
+}
+<style>
+     body {
+         margin: 0;
+         font-family: 'Segoe UI', sans-serif;
+         background: #f4fbfa;
+     }
 
-<div class="student-dashboard">
+     /* ===== TOP BAR ===== */
+     .topbar {
+         height: 60px;
+         background: #003b3f;
+         color: #fff;
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+         padding: 0 30px;
+     }
 
-    <!-- Profile Card -->
-    <div class="profile-card">
-        <img src="@Model.Photo" alt="Student Photo" />
-        <h3>@Model.EnrollmentNo</h3>
-        <span class="badge">Semester @Model.Semester</span>
+         .topbar h3 {
+             margin: 0;
+             font-size: 20px;
+             font-weight: 600;
+         }
+
+     .logout-btn {
+         background: transparent;
+         border: 1px solid #fff;
+         color: #fff;
+         padding: 6px 18px;
+         border-radius: 20px;
+         text-decoration: none;
+         font-size: 14px;
+     }
+
+         .logout-btn:hover {
+             background: #fff;
+             color: #003b3f;
+         }
+
+     /* ===== PAGE ===== */
+     .student-dashboard-full {
+         padding: 40px;
+     }
+
+     /* ===== PROFILE ===== */
+     .profile-section {
+         display: flex;
+         gap: 30px;
+         background: linear-gradient(135deg, #006a67, #0fb9b1);
+         padding: 30px;
+         border-radius: 20px;
+         color: #fff;
+     }
+
+     .profile-img {
+         width: 140px;
+         height: 140px;
+         border-radius: 50%;
+         border: 5px solid #fff;
+         object-fit: cover;
+     }
+
+     .profile-info h2 {
+         margin: 0;
+         font-size: 28px;
+     }
+
+     .profile-stats {
+         display: flex;
+         gap: 40px;
+         margin-top: 20px;
+     }
+
+         .profile-stats span {
+             display: block;
+             font-size: 13px;
+             opacity: 0.8;
+         }
+     .academic-section {
+         display: grid;
+         grid-template-columns: repeat(3, 1fr);
+         gap: 25px;
+         margin-top: 40px;
+     }
+
+     .academic-card {
+         background: linear-gradient(135deg, #ffffff, #f2fdfc);
+         padding: 30px;
+         border-radius: 20px;
+         box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+         text-align: center;
+         border-top: 6px solid #0fb9b1;
+     }
+
+         .academic-card h4 {
+             margin-bottom: 10px;
+             color: #006a67;
+         }
+
+         .academic-card p {
+             margin: 0;
+             font-size: 16px;
+             font-weight: 600;
+         }
+
+     .actions-section {
+         display: grid;
+         grid-template-columns: repeat(4, 1fr);
+         gap: 25px;
+         margin-top: 50px;
+     }
+
+     .action-btn {
+         text-decoration: none;
+         text-align: center;
+         padding: 18px;
+         border-radius: 30px;
+         background: #ffffff;
+         color: #006a67;
+         font-weight: 600;
+         border: 2px solid #006a67;
+         transition: all 0.3s ease;
+     }
+
+         .action-btn:hover {
+             background: #006a67;
+             color: #fff;
+             transform: translateY(-6px);
+             box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+         }
+
+         .action-btn:active {
+             transform: scale(0.96);
+         }
+</style>
+<!-- TOP BAR -->
+<div class="topbar">
+    <h3>Student Management System</h3>
+    <a asp-controller="Account" asp-action="Logout" class="logout-btn">Logout</a>
+</div>
+
+<div class="student-dashboard-full">
+
+    <!-- PROFILE -->
+    <div class="profile-section">
+        <img src="@Model.Photo" class="profile-img" /><div class="welcome-text">
+            <span class="welcome-small">Welcome 👋</span>
+            <h2 class="student-name">@Model.StudentName</h2>
+        </div>
+        <div class="profile-info">
+            <h2>@Model.EnrollmentNo</h2>
+            <p>Semester @Model.Semester</p>
+
+            <div class="profile-stats">
+                <div>
+                    <span>Age</span>
+                    <strong>@Model.Age Years</strong>
+                </div>
+                <div>
+                    <span>Date of Birth</span>
+                    <strong>@Model.DOB.ToString("dd MMM yyyy")</strong>
+                </div>
+                <div>
+                    <span>Admission Date</span>
+                    <strong>@Model.CreatedAt.ToString("dd MMM yyyy")</strong>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Info Cards -->
-    <div class="info-cards">
-
-        <div class="info-card">
-            <p>Age</p>
-            <h2>@Model.Age</h2>
+    <!-- ACADEMIC -->
+    <div class="academic-section">
+        <div class="academic-card">
+            <h4>Course</h4>
+            <p>Bachelor of Computer Applications</p>
         </div>
 
-        <div class="info-card">
-            <p>Admission Date</p>
-            <h2>@Model.CreatedAt.ToString("dd MMM yyyy")</h2>
+        <div class="academic-card">
+            <h4>Current Semester</h4>
+            <p>Semester @Model.Semester</p>
         </div>
 
+        <div class="academic-card">
+            <h4>Account Status</h4>
+            <p style="color:green;">Active</p>
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions-section">
+        <a href="/Teachers/Index" class="action-btn">View Faculty</a>
+        <a href="/Courses/Index" class="action-btn">View Courses</a>
+        <a href="/Exams/Index" class="action-btn">View Exams</a>
+        <a href="/Results/Index" class="action-btn">View Results</a>
     </div>
 
 </div>

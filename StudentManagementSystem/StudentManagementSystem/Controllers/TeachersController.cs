@@ -16,6 +16,7 @@ namespace StudentManagementSystem.Controllers
         {
             _context = context;
         }
+        [RoleAuthorize("Student", "Teacher", "Admin")]
         public IActionResult Index()
         {
             var teachers = _context.Teachers
