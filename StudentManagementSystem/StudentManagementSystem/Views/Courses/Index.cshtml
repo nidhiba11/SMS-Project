@@ -1,4 +1,6 @@
 ﻿@model IEnumerable<Course>
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
 
 @section Styles {
     <link rel="stylesheet" href="~/css/courses.css" asp-append-version="true" />
@@ -25,13 +27,13 @@
             </button>
         </div>
     </form>
-    @if (User.IsInRole("Admin"))
-            {
-
+    @if (HttpContextAccessor.HttpContext.Session.GetString("Role") == "Admin")
+    {
         <a asp-action="Details" class="btn btn-manage-courses">
-        <i class="bi bi-gear-fill me-1"></i> Manage Courses
+            <i class="bi bi-gear-fill me-1"></i> Manage Courses
         </a>
-            }
+    }
+
 </div>
 
 

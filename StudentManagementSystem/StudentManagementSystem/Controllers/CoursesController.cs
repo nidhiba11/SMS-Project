@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using StudentManagementSystem.Filter;
 using StudentManagementSystem.Models;
 
 namespace StudentManagementSystem.Controllers
@@ -27,6 +26,7 @@ namespace StudentManagementSystem.Controllers
 
             return View(courses.ToList());
         }
+        [RoleAuthorize("Admin")]
         public IActionResult Details()
         {
             return View(_context.Courses.ToList());

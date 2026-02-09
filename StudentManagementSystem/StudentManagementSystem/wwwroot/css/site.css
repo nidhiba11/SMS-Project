@@ -19,8 +19,8 @@ html, body {
 
 body {
     background-color: var(--bg-page);
-    overflow: hidden; /* IMPORTANT: prevents body scroll */
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow-y: auto; /* ENABLE SCROLL */
 }
 
 /* ================================
@@ -32,16 +32,25 @@ body {
 }
 
 /* ================================
-   SIDEBAR (FIXED – NEVER SCROLLS)
+   FLEX LAYOUT WRAPPER
+================================ */
+.d-flex-wrapper {
+    display: flex;
+    min-height: 100vh; /* full viewport height */
+}
+
+/* ================================
+   SIDEBAR (FIXED – SCROLLS INDEPENDENT)
 ================================ */
 .sidebar {
-    position: fixed;
-    top: 56px; /* height of navbar */
-    left: 0;
     width: 240px;
-    height: calc(100vh - 56px);
     background-color: #063f3f;
-    overflow-y: auto;
+    padding-top: 20px;
+    flex-shrink: 0;
+    overflow-y: auto; /* scroll if sidebar is long */
+    position: sticky;
+    top: 56px; /* height of navbar */
+    height: calc(100vh - 56px);
 }
 
     .sidebar .nav-link {
@@ -62,38 +71,25 @@ body {
         }
 
 /* ================================
-   MAIN CONTENT (ONLY THIS SCROLLS)
+   MAIN CONTENT (THIS SCROLLS)
 ================================ */
 .main-content {
-    margin-top: 56px; /* navbar height */
-    margin-left: 240px; /* EXACT sidebar width */
-    padding: 24px; /* inner spacing only */
+    flex-grow: 1;
+    padding: 24px;
     background-color: #f6f9f9;
-    min-height: calc(100vh - 56px);
+    min-height: 100vh;
+    margin-top: 56px; /* navbar height */
 }
 
 /* ================================
-   STUDENT CARDS
+   STUDENT & TEACHER CARDS
 ================================ */
-.student-card {
+.student-card, .teacher-card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     border-radius: 12px;
 }
 
-    .student-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-    }
-
-/* ================================
-   TEACHER CARDS
-================================ */
-.teacher-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border-radius: 12px;
-}
-
-    .teacher-card:hover {
+    .student-card:hover, .teacher-card:hover {
         transform: translateY(-6px);
         box-shadow: 0 12px 30px rgba(0,0,0,0.12);
     }
@@ -131,6 +127,11 @@ body {
     }
 
     .main-content {
-        margin-left: 220px;
+        margin-left: 0;
+        padding: 15px;
+    }
+
+    .d-flex-wrapper {
+        flex-direction: column;
     }
 }
