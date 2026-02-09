@@ -1,0 +1,113 @@
+﻿/* Dashboard header */
+.dashboard-header {
+    padding: 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+    .dashboard-header .profile-photo img {
+        border-radius: 50%;
+        border: 2px solid #0ea5a4;
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .dashboard-header .profile-photo img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+/* Cards container */
+.row.g-3 {
+    margin-top: 20px;
+}
+
+/* Teacher Cards */
+.teacher-card {
+    border-radius: 12px;
+    padding: 25px 15px;
+    background-color: #ffffff;
+    color: #003b3f;
+    text-align: center;
+    font-family: "Segoe UI", sans-serif;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: default;
+}
+
+    .teacher-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+    }
+
+/* Card icons */
+.card-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 10px;
+    color: #0ea5a4; /* subtle accent */
+}
+
+/* Card titles */
+.teacher-card h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+/* Card numbers */
+.teacher-card p {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* Quick action buttons */
+.d-flex.flex-wrap.gap-3 a.btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    background-color: #0ea5a4;
+    color: #fff;
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+    .d-flex.flex-wrap.gap-3 a.btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+        background-color: #0c8b88;
+    }
+
+/* Status badges (if any) */
+.status.pass {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.status.fail {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.publish.yes {
+    color: #0ea5a4;
+    font-weight: 600;
+}
+
+.publish.no {
+    color: #6c757d;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .teacher-card {
+        margin-bottom: 15px;
+    }
+}

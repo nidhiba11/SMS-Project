@@ -19,7 +19,6 @@ namespace StudentManagementSystem.Controllers
            .Include(e => e.Course)
            .AsQueryable();
 
-            // STUDENT: only published exams
             if (User.IsInRole("Student"))
             {
                 examsQuery = examsQuery.Where(e => e.IsPublished);
@@ -41,7 +40,6 @@ namespace StudentManagementSystem.Controllers
                 return NotFound();
             }
 
-            //STUDENT SAFETY: cannot see unpublished exam details
             if (User.IsInRole("Student") && !exam.IsPublished)
             {
                 return Forbid();

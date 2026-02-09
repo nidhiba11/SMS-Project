@@ -1,18 +1,18 @@
 ﻿@model IEnumerable<StudentManagementSystem.Models.Exam>
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 
+@{
+    ViewData["Title"] = "Examinations";
+    var role = HttpContextAccessor.HttpContext.Session.GetString("Role");
+}
 
 @section Styles {
     <link rel="stylesheet" href="~/css/exam.css" asp-append-version="true" />
 }
 
-@{
-    ViewData["Title"] = "Examinations";
-}
 @if (TempData["success"] != null)
 {
-    <div class="alert alert-success">
-        @TempData["success"]
-    </div>
+    <div class="alert alert-success">@TempData["success"]</div>
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -22,7 +22,7 @@
     </div>
 
     @* Create button only for Admin & Teacher *@
-    @if (User.IsInRole("Admin") || User.IsInRole("Teacher"))
+    @if (role == "Admin" || role == "Teacher")
     {
         <a asp-action="Create" class="btn btn-success">
             <i class="bi bi-plus-circle me-1"></i> Create Exam
@@ -30,22 +30,24 @@
     }
 </div>
 
-@if (!Model.Any())
+@if (!Model.Any() || (role == "Student" && !Model.Any(e => e.IsPublished)))
 {
-    <div class="alert alert-info">
-        No exams available.
-    </div>
+    <div class="alert alert-info">No exams available.</div>
 }
 else
 {
     <div class="exam-grid">
-
         @foreach (var exam in Model)
         {
+            if (role == "Student" && !exam.IsPublished)
+            {
+                continue; // skip unpublished exams for students
+            }
+
             <div class="exam-card">
 
-                @* Status badge (hidden from students) *@
-                @if (User.IsInRole("Admin") || User.IsInRole("Teacher"))
+                @* Status badge visible only to Admin & Teacher *@
+                @if (role == "Admin" || role == "Teacher")
                 {
                     <span class="exam-status @(exam.IsPublished ? "published" : "draft")">
                         @(exam.IsPublished ? "Published" : "Draft")
@@ -53,116 +55,68 @@ else
                 }
 
                 <div class="exam-title">@exam.ExamName</div>
-
                 <div class="exam-course">
                     @(exam.Course != null ? exam.Course.CourseName : "No Course") · Semester @exam.Semester
                 </div>
 
                 <div class="exam-meta">
-                    <span>
-                        <i class="bi bi-calendar-event"></i>
-                        @exam.ExamDate.ToString("dd MMM yyyy")
-                    </span>
-
-                    <span>
-                        <i class="bi bi-clock"></i>
-                        @exam.DurationMinutes mins
-                    </span>
-
-                    <span>
-                        <i class="bi bi-journal-text"></i>
-                        @exam.ExamType
-                    </span>
-
-                    <span>
-                        <i class="bi bi-award"></i>
-                        @exam.MaxMarks Marks
-                    </span>
+                    <span><i class="bi bi-calendar-event"></i> @exam.ExamDate.ToString("dd MMM yyyy")</span>
+                    <span><i class="bi bi-clock"></i> @exam.DurationMinutes mins</span>
+                    <span><i class="bi bi-journal-text"></i> @exam.ExamType</span>
+                    <span><i class="bi bi-award"></i> @exam.MaxMarks Marks</span>
                 </div>
 
                 <div class="exam-actions">
-                    <a asp-action="Details"
-                       asp-route-id="@exam.ExamId"
-                       class="btn-view">
-                        View Details
-                    </a>
+                    <a asp-action="Details" asp-route-id="@exam.ExamId" class="btn-view">View Details</a>
 
-                    @* Edit only for Admin & Teacher *@
-                   @if (User.IsInRole("Admin") || User.IsInRole("Teacher"))
-                       {
-                        <a asp-action="Edit"
-                           asp-route-id="@exam.ExamId"
-                           class="btn-edit">
-                            Edit
-                        </a>
+                    @* Edit/Delete buttons for Admin & Teacher *@
+                    @if (role == "Admin" || role == "Teacher")
+                    {
+                        <a asp-action="Edit" asp-route-id="@exam.ExamId" class="btn-edit">Edit</a>
 
-                        <a href="#"
-                           class="btn-edit btn-delete"
-                           data-id="@exam.ExamId"
-                           data-name="@exam.ExamName"
-                           data-bs-toggle="modal"
-                           data-bs-target="#deleteExamModal">
+                        <a href="#" class="btn-edit btn-delete" data-id="@exam.ExamId" data-name="@exam.ExamName"
+                           data-bs-toggle="modal" data-bs-target="#deleteExamModal">
                             Delete
                         </a>
-
                     }
-
-    
                 </div>
             </div>
         }
     </div>
 }
-<!-- Delete Exam Confirmation Modal -->
+
+<!-- Delete Exam Modal -->
 <div class="modal fade" id="deleteExamModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-
             <div class="modal-header text-white" style="background:#0f766e;">
                 <h5 class="modal-title">Confirm Delete</h5>
-                <button type="button"
-                        class="btn-close btn-close-white"
-                        data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-
             <div class="modal-body text-center">
                 <i class="bi bi-exclamation-triangle-fill text-danger fs-1 mb-3"></i>
-
                 <p class="fs-5 mb-1">Delete this exam?</p>
                 <strong id="examName"></strong>
-
-                <p class="text-muted mt-2">
-                    This action cannot be undone.
-                </p>
+                <p class="text-muted mt-2">This action cannot be undone.</p>
             </div>
-
             <div class="modal-footer justify-content-center">
-                <button class="btn btn-outline-secondary px-4"
-                        data-bs-dismiss="modal">
-                    Cancel
-                </button>
-
+                <button class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
                 <form id="deleteExamForm" method="post">
-                    <button type="submit" class="btn btn-danger px-4">
-                        Yes, Delete
-                    </button>
+                    <button type="submit" class="btn btn-danger px-4">Yes, Delete</button>
                 </form>
             </div>
-
         </div>
     </div>
 </div>
+
 <script>
     const deleteExamModal = document.getElementById('deleteExamModal');
 
     deleteExamModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
-
         const examId = button.getAttribute('data-id');
         const examName = button.getAttribute('data-name');
-
         document.getElementById('examName').innerText = examName;
-
         const form = document.getElementById('deleteExamForm');
         form.action = `/Exams/Delete/${examId}`;
     });

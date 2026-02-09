@@ -1,72 +1,57 @@
 ﻿@model StudentManagementSystem.Models.Exam
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Exam Details";
+    var role = HttpContextAccessor.HttpContext.Session.GetString("Role");
+}
 
 @section Styles {
     <link rel="stylesheet" href="~/css/exam-details.css" asp-append-version="true" />
 }
-@{
-    ViewData["Title"] = "Exam Details";
-}
-<div class="exam-details-wrapper">
 
+<div class="exam-details-wrapper">
     <!-- Header -->
     <div class="exam-header">
         <h2>@Model.ExamName</h2>
-        <span class="badge">
-            @(Model.Course != null ? Model.Course.CourseName : "No Course")
-        </span>
-
+        <span class="badge">@((Model.Course != null) ? Model.Course.CourseName : "No Course")</span>
     </div>
 
     <!-- Info Cards -->
     <div class="exam-info-grid">
-
-        <div class="info-card">
-            <h6>Semester</h6>
-            <p>Semester @Model.Semester</p>
-        </div>
-
-        <div class="info-card">
-            <h6>Exam Date</h6>
-            <p>@Model.ExamDate.ToString("dd MMM yyyy")</p>
-        </div>
-
-        <div class="info-card">
-            <h6>Max Marks</h6>
-            <p>@Model.MaxMarks</p>
-        </div>
-
-        <div class="info-card">
-            <h6>Min Marks</h6>
-            <p>@Model.MinMarks</p>
-        </div>
-
+        <div class="info-card"><h6>Semester</h6><p>Semester @Model.Semester</p></div>
+        <div class="info-card"><h6>Exam Date</h6><p>@Model.ExamDate.ToString("dd MMM yyyy")</p></div>
+        <div class="info-card"><h6>Max Marks</h6><p>@Model.MaxMarks</p></div>
+        <div class="info-card"><h6>Min Marks</h6><p>@Model.MinMarks</p></div>
         <div class="info-card">
             <h6>Status</h6>
-            <p class="status @(Model.IsPublished ? "published" : "draft")">
-                @(Model.IsPublished ? "Published" : "Draft")
-            </p>
+            @if (role == "Admin" || role == "Teacher")
+            {
+                <p class="status @(Model.IsPublished ? "published" : "draft")">
+                    @(Model.IsPublished ? "Published" : "Draft")
+                </p>
+            }
+            else
+            {
+                <p class="status @(Model.IsPublished ? "published" : "draft")">
+                    @(Model.IsPublished ? "Published" : "Not Published")
+                </p>
+            }
         </div>
-
     </div>
 
     <!-- Action Buttons -->
     <div class="exam-actions">
-
         <a asp-action="Index" class="btn-outline">← Back</a>
 
-        @if (User.IsInRole("Teacher") || User.IsInRole("Admin"))
+        @if (role == "Admin" || role == "Teacher")
         {
-            <a asp-action="Edit" asp-route-id="@Model.ExamId" class="btn-primary">
-                Edit Exam
-            </a>
+            <a asp-action="Edit" asp-route-id="@Model.ExamId" class="btn-primary">Edit Exam</a>
         }
 
-        @if (User.IsInRole("Student") && Model.IsPublished)
+        @if (role == "Student" && Model.IsPublished)
         {
-            <span class="student-note">
-                📌 Exam details are published. Please prepare accordingly.
-            </span>
+            <span class="student-note">📌 Exam details are published. Please prepare accordingly.</span>
         }
     </div>
-
 </div>

@@ -15,7 +15,7 @@
     </div>
 </div>
 
-@if (Model == null || Model.Count() == 0)
+@if (Model == null || !Model.Any())
 {
     <div class="alert alert-warning">
         No results available.
@@ -42,9 +42,9 @@ else
                 @foreach (var r in Model)
                 {
                     <tr>
-                        <td>@r.Student.User.FullName</td>
-                        <td>@r.Exam.ExamName</td>
-                        <td>@r.Course.CourseName</td>
+                        <td>@r.Student?.User?.FullName ?? "N/A"</td>
+                        <td>@r.Exam?.ExamName ?? "N/A"</td>
+                        <td>@r.Course?.CourseName ?? "N/A"</td>
                         <td>@r.MarksObtained / @r.MaxMarks</td>
                         <td>@r.Percentage %</td>
                         <td>
@@ -56,8 +56,8 @@ else
                             </span>
                         </td>
                         <td>
-                            <span class="publish @(r.Exam.IsPublished ? "yes" : "no")">
-                                @(r.Exam.IsPublished ? "Yes" : "No")
+                            <span class="publish @(r.Exam?.IsPublished == true ? "yes" : "no")">
+                                @(r.Exam?.IsPublished == true ? "Yes" : "No")
                             </span>
                         </td>
                         <td>
@@ -69,7 +69,7 @@ else
                             </a>
                             <a asp-action="TogglePublish" asp-route-id="@r.ResultId"
                                class="btn btn-sm btn-outline-success">
-                                @(r.Exam.IsPublished ? "Unpublish" : "Publish")
+                                @(r.Exam?.IsPublished == true ? "Unpublish" : "Publish")
                             </a>
                         </td>
                     </tr>

@@ -83,11 +83,11 @@
                 }
 
                 <!-- TEACHERS (ADMIN ONLY) -->
-                @if (role == "Admin")
+                @if (role == "Admin" || role == "Student")
                 {
                     <li class="nav-item">
                         <a class="nav-link @(currentController == "Teachers" && currentAction == "Index" ? "active" : "")"
-                           asp-controller="Teachers" asp-action="Details">
+                           asp-controller="Teachers" asp-action="Index">
                             Teachers
                         </a>
                     </li>
@@ -109,14 +109,35 @@
                     </a>
                 </li>
 
+
                 <!-- RESULTS -->
+                    @if (role == "Admin")
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Results" ? "active" : "")"
+                            asp-controller="Results" asp-action="AdminIndex">
+                                Results
+                            </a>
+                        </li>
+                    }
+                    else if (role == "Teacher")
+                    {
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Results" ? "active" : "")"
+                           asp-controller="Results" asp-action="TeacherIndex">
+                            Results
+                        </a>
+                    </li>
+                }
+                else if (role == "Student")
+                {
                 <li class="nav-item">
                     <a class="nav-link @(currentController == "Results" ? "active" : "")"
                        asp-controller="Results" asp-action="Index">
                         Results
                     </a>
                 </li>
-
+                }
             </ul>
         </aside>
 
