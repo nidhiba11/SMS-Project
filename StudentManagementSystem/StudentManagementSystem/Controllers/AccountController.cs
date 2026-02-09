@@ -2,18 +2,20 @@
 using Microsoft.EntityFrameworkCore;
 using StudentManagementSystem.Models;
 using StudentManagementSystem.Models.ViewModels;
+
 namespace StudentManagementSystem.Controllers
 {
     public class AccountController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _config;
+
         public AccountController(ApplicationDbContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
         }
-        
+
         // LOGIN PAGE
         [HttpGet]
         public IActionResult Login()
@@ -27,10 +29,14 @@ namespace StudentManagementSystem.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            // Normalize inputs
+            var email = model.Email?.Trim().ToLower();
+            var password = model.Password?.Trim();
+
             var user = _context.Users.FirstOrDefault(u =>
-                u.Email == model.Email &&
-                u.Password == model.Password &&
-                u.IsActive == true);
+                u.Email.ToLower() == email &&
+                u.Password == password &&
+                u.IsActive);
 
             if (user == null)
             {
@@ -38,7 +44,7 @@ namespace StudentManagementSystem.Controllers
                 return View(model);
             }
 
-            // Clear old session
+            // Set session
             HttpContext.Session.Clear();
             HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetString("Role", user.Role);
@@ -54,7 +60,7 @@ namespace StudentManagementSystem.Controllers
             return RedirectToAction("Dashboard", "Students");
         }
 
-
+        // LOGOUT
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
@@ -65,6 +71,8 @@ namespace StudentManagementSystem.Controllers
 
             return RedirectToAction("Login", "Account");
         }
+
+        // REGISTER PAGE
         [HttpGet]
         public IActionResult Register()
         {
@@ -77,9 +85,11 @@ namespace StudentManagementSystem.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            var email = model.Email?.Trim().ToLower();
+
             // Check if email already exists
             var existingUser = _context.Users
-                .FirstOrDefault(u => u.Email == model.Email);
+                .FirstOrDefault(u => u.Email.ToLower() == email);
 
             if (existingUser != null)
             {
@@ -90,9 +100,9 @@ namespace StudentManagementSystem.Controllers
             // Create new student user
             var user = new User
             {
-                FullName = model.FullName,
-                Email = model.Email,
-                Password = model.Password, // plain for now
+                FullName = model.FullName?.Trim(),
+                Email = email,
+                Password = model.Password?.Trim(), // plain for now
                 Role = "Student",
                 IsActive = true,
                 CreatedAt = DateTime.Now
@@ -103,6 +113,8 @@ namespace StudentManagementSystem.Controllers
 
             return RedirectToAction("Login");
         }
+
+        // FORGOT PASSWORD
         [HttpGet]
         public IActionResult ForgotPassword()
         {
@@ -118,7 +130,7 @@ namespace StudentManagementSystem.Controllers
                 return View();
             }
 
-            var user = _context.Users.FirstOrDefault(u => u.Email == email && u.IsActive);
+            var user = _context.Users.FirstOrDefault(u => u.Email.ToLower() == email.Trim().ToLower() && u.IsActive);
 
             if (user == null)
             {
@@ -130,6 +142,5 @@ namespace StudentManagementSystem.Controllers
 
             return View();
         }
-
     }
 }
