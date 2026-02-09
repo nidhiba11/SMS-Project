@@ -162,7 +162,7 @@ namespace StudentManagementSystem.Controllers
         }
 
         // ================= DELETE GET =================
-
+       
         public IActionResult Delete(int id)
         {
             var student = _context.Students
