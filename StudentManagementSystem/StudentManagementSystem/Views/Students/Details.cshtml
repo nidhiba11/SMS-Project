@@ -34,7 +34,7 @@
                             data-bs-toggle="modal"
                             data-bs-target="#deleteStudentModal"
                             data-id="@s.StudentId"
-                            data-name="@s.User.FullName">
+                            data-name="@s.User?.FullName">
                         <i class="bi bi-trash-fill"></i>
                     </button>
                 </td>
@@ -89,6 +89,7 @@
         </div>
     </div>
 </div>
+
 <script>
     const deleteModal = document.getElementById('deleteStudentModal');
 
@@ -98,10 +99,11 @@
         const studentId = button.getAttribute('data-id');
         const studentName = button.getAttribute('data-name');
 
-        document.getElementById('studentName').innerText = studentName;
+        // Display student name in modal
+        document.getElementById('studentName').innerText = studentName ?? '';
 
+        // Set form action for delete POST
         const form = document.getElementById('deleteForm');
         form.action = `/Students/Delete/${studentId}`;
     });
 </script>
-

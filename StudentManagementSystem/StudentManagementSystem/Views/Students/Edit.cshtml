@@ -1,4 +1,5 @@
 ﻿@model StudentManagementSystem.Models.Student
+
 @{
     ViewData["Title"] = "Edit Student";
 }
@@ -11,6 +12,17 @@
 
         <div class="card-body">
 
+            <!-- TempData Message -->
+            @if (TempData["msg"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["msg"]
+                </div>
+            }
+
+            <!-- Validation Summary -->
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
             @using (Html.BeginForm("Edit", "Students", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
                 @Html.HiddenFor(m => m.StudentId)
@@ -18,41 +30,49 @@
                 <div class="mb-3">
                     @Html.LabelFor(m => m.EnrollmentNo)
                     @Html.TextBoxFor(m => m.EnrollmentNo, new { @class = "form-control" })
+                    <span asp-validation-for="EnrollmentNo" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
-                    @Html.LabelFor(m => m.User.FullName)
-                    @Html.TextBoxFor(m => m.User.FullName, new { @class = "form-control" })
+                    <label class="form-label">Full Name</label>
+                    <input class="form-control" value="@Model.User.FullName" readonly />
                 </div>
 
                 <div class="mb-3">
-                    @Html.LabelFor(m => m.User.Email)
-                    @Html.TextBoxFor(m => m.User.Email, new { @class = "form-control" })
+                    <label class="form-label">Email</label>
+                    <input class="form-control" value="@Model.User.Email" readonly />
                 </div>
 
+                <!-- Course Dropdown -->
                 <div class="mb-3">
                     @Html.LabelFor(m => m.Course, "Course")
                     @Html.DropDownListFor(
-                    m => m.Course,
-                                new List<SelectListItem>
-                                {
-                                new SelectListItem { Text = "Select Course", Value = "" },
-                                new SelectListItem { Text = "BCA", Value = "BCA" },
-                                new SelectListItem { Text = "BSc IT", Value = "BSc IT" },
-                                new SelectListItem { Text = "BCom", Value = "BCom" },
-                                new SelectListItem { Text = "BBA", Value = "BBA" }
-                                },
+                    m => m.CourseId,
+                                new SelectList(ViewBag.Courses, "CourseId", "CourseName", Model.CourseId),
+                                "-- Select Course --",
                                 new { @class = "form-select" }
                                 )
+                <span asp-validation-for="CourseId" class="text-danger"></span>
             </div>
 
-                <div class="mb-3">
-                    @Html.LabelFor(m => m.DOB)
-                    @Html.TextBoxFor(m => m.DOB, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
-                </div>
+            <div class="mb-3">
+                @Html.LabelFor(m => m.DOB)
+                @Html.TextBoxFor(m => m.DOB, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                <span asp-validation-for="DOB" class="text-danger"></span>
+            </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Photo</label>
+            <!-- Photo -->
+            <div class="mb-3">
+                <label class="form-label">Photo</label>
+
+                @if (!string.IsNullOrEmpty(Model.Photo))
+                    {
+                        <div class="mb-2 text-center">
+                            <img src="@Url.Content(Model.Photo)" alt="Student Photo"
+                                 style="max-width:120px; max-height:120px; border-radius:10px;" />
+                        </div>
+                    }
+
                     <input type="file" name="PhotoFile" class="form-control" />
                 </div>
 
@@ -67,3 +87,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

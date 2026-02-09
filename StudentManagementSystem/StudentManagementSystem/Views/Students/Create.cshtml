@@ -1,142 +1,173 @@
-﻿@using Microsoft.AspNetCore.Http
-@model StudentManagementSystem.Models.Student
+﻿@model StudentManagementSystem.Models.Student
 
 @{
     ViewData["Title"] = "Add Student";
-    var role = Context.Session.GetString("Role") ?? "";
+    Layout = "_Layout"; // Keep your main layout
 }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
-<style>
-    .erp-card {
-        border-radius: 18px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        background: #fff;
-    }
+    <style>
+        .erp-card {
+            border-radius: 18px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            background: #fff;
+        }
 
-    .erp-header {
-        background: linear-gradient(135deg, #003b3f, #0fa4a9);
-        border-radius: 18px 18px 0 0;
-        height: 90px;
-    }
+        .erp-header {
+            background: linear-gradient(135deg, #003b3f, #0d6f6a);
+            border-radius: 18px 18px 0 0;
+            height: 90px;
+        }
 
-    .erp-label {
-        font-weight: 600;
-        color: #003b3f;
-        margin-bottom: 6px;
-    }
+        .erp-label {
+            font-weight: 600;
+            color: #003b3f;
+            margin-bottom: 6px;
+        }
 
-    .erp-input,
-    .erp-select {
-        border-radius: 12px;
-        padding: 12px 14px;
-        border: 1px solid #ddd;
-    }
+        .erp-input,
+        .erp-select {
+            border-radius: 12px;
+            padding: 12px 14px;
+            border: 1px solid #ddd;
+        }
 
-    .btn-erp {
-        background: linear-gradient(135deg, #003b3f, #0fa4a9);
-        border: none;
-        color: #fff;
-        padding: 10px 28px;
-        border-radius: 30px;
-        font-weight: 600;
-    }
-</style>
+        .btn-erp {
+            background: linear-gradient(135deg, #003b3f, #0fa4a9);
+            border: none;
+            color: #fff;
+            padding: 10px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+    </style>
+}
 
-<div class="container mt-5">
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("UserId").addEventListener("change", function () {
+                const selected = this.options[this.selectedIndex];
+                const name = selected.getAttribute("data-name");
+                const email = selected.getAttribute("data-email");
+
+                document.getElementById("FullName").value = name || "";
+                document.getElementById("Email").value = email || "";
+
+                document.getElementById("HiddenFullName").value = name || "";
+                document.getElementById("HiddenEmail").value = email || "";
+            });
+        });
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<div class="container-fluid mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-10">
+        <div class="col-lg-8">
 
             <div class="card erp-card border-0">
 
                 <!-- Header -->
                 <div class="erp-header d-flex flex-column justify-content-center align-items-center text-white">
                     <i class="bi bi-person-plus-fill" style="font-size:32px;"></i>
-                    <h6 class="mb-0 fw-semibold">Add Student</h6>
+                    <h5 class="mb-0 fw-semibold">Add Student</h5>
                 </div>
 
                 <!-- Body -->
                 <div class="card-body p-4">
 
+                    <!-- TempData Message -->
+                    @if (TempData["msg"] != null)
+                    {
+                        <div class="alert alert-success">
+                            @TempData["msg"]
+                        </div>
+                    }
+
+                    <!-- Validation Summary -->
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
                     <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="StudentId" />
 
                         <!-- User -->
                         <div class="mb-3">
                             <label class="erp-label">User</label>
-                            <select asp-for="UserId"
-                                    class="form-select erp-select"
-                                    disabled="@(role != "Admin")">
+                            <select asp-for="UserId" asp-items="ViewBag.Users" class="form-select erp-select">
                                 <option value="">-- Select User --</option>
                             </select>
+                            <span asp-validation-for="UserId" class="text-danger"></span>
                         </div>
+
+                        <!-- Full Name & Email -->
+                        <div class="mb-3">
+                            <label class="erp-label">Full Name</label>
+                            <input type="text" id="FullName" class="form-control" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label class="erp-label">Email</label>
+                            <input type="text" id="Email" class="form-control" disabled />
+                        </div>
+
+                        <input type="hidden" name="FullName" id="HiddenFullName" />
+                        <input type="hidden" name="Email" id="HiddenEmail" />
 
                         <!-- Course -->
                         <div class="mb-3">
                             <label class="erp-label">Course</label>
-                            <select asp-for="CourseId"
-                                    class="form-select erp-select"
-                                    disabled="@(role != "Admin")">
+                            <select asp-for="CourseId" class="form-select erp-select">
                                 <option value="">-- Select Course --</option>
+                                @foreach (var course in ViewBag.Courses)
+                                {
+                                    <option value="@course.CourseId">@course.CourseName</option>
+                                }
                             </select>
+                            <span asp-validation-for="CourseId" class="text-danger"></span>
                         </div>
 
                         <!-- Enrollment -->
                         <div class="mb-3">
                             <label class="erp-label">Enrollment No</label>
-                            <input asp-for="EnrollmentNo"
-                                   class="form-control erp-input"
-                                   readonly="@(role != "Admin")" />
+                            <input asp-for="EnrollmentNo" class="form-control erp-input" />
+                            <span asp-validation-for="EnrollmentNo" class="text-danger"></span>
                         </div>
 
-                        <!-- Row -->
+                        <!-- Row: Semester & DOB -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="erp-label">Semester</label>
-                                <input asp-for="Semester"
-                                       class="form-control erp-input"
-                                       readonly="@(role != "Admin")" />
+                                <input asp-for="Semester" class="form-control erp-input" />
+                                <span asp-validation-for="Semester" class="text-danger"></span>
                             </div>
-
                             <div class="col-md-6 mb-3">
                                 <label class="erp-label">DOB</label>
-                                <input asp-for="DOB"
-                                       type="date"
-                                       class="form-control erp-input"
-                                       readonly="@(role != "Admin")" />
+                                <input asp-for="DOB" type="date" class="form-control erp-input" />
+                                <span asp-validation-for="DOB" class="text-danger"></span>
                             </div>
                         </div>
 
                         <!-- Photo -->
-                        @if (role == "Admin")
-                        {
-                            <div class="mb-4">
-                                <label class="erp-label">Photo</label>
-                                <input type="file"
-                                       name="PhotoFile"
-                                       class="form-control erp-input" />
-                            </div>
-                        }
+                        <div class="mb-4">
+                            <label class="erp-label">Photo</label>
+                            <input type="file" name="PhotoFile" class="form-control erp-input" />
+                        </div>
 
                         <!-- Buttons -->
                         <div class="d-flex justify-content-end gap-3">
-                            <a asp-action="Details"
-                               class="btn btn-outline-secondary rounded-pill px-4">
-                                Back
+                            <a asp-action="Details" class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="bi bi-arrow-left me-1"></i> Back
                             </a>
-
-                            @if (role == "Admin")
-                            {
-                                <button type="submit" class="btn btn-erp">
-                                    <i class="bi bi-save me-1"></i> Save Student
-                                </button>
-                            }
+                            <button type="submit" class="btn btn-erp">
+                                <i class="bi bi-save me-1"></i> Save Student
+                            </button>
                         </div>
-
                     </form>
-
                 </div>
+
             </div>
 
         </div>
