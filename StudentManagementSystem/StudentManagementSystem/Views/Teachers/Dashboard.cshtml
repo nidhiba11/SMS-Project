@@ -1,58 +1,342 @@
-﻿@model StudentManagementSystem.Models.ViewModels.TeacherDashboardVM
-
-@{
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Teacher Dashboard";
 }
 
-<link rel="stylesheet" href="~/css/teacher-dashboard.css" />
+@section Styles {
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background: #e0f7f7; /* soft teal background */
+        }
 
-<div class="teacher-dashboard">
+        /* MAIN CONTENT FULL WIDTH */
+        .main-content {
+            flex: 1;
+            padding: 30px 40px;
+        }
 
-    <!-- HEADER -->
-    <div class="td-header fade-in">
+        .page-header {
+            margin-bottom: 20px;
+        }
+
+            .page-header h1 {
+                font-size: 28px;
+                color: #00796b; /* teal color */
+                margin: 0;
+                font-weight: 700;
+            }
+
+            .page-header p {
+                color: #4b7070;
+                font-size: 15px;
+                margin-top: 4px;
+            }
+
+        h2 {
+            font-weight: 700;
+            color: #00796b;
+        }
+
+        .sub-text {
+            margin-top: -5px;
+            color: #4b7070;
+        }
+
+        /* TEACHER PROFILE */
+        .teacher-profile {
+            background: #ffffff;
+            padding: 25px 30px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            border-left: 6px solid #009688; /* teal */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .teacher-profile:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            }
+
+        .profile-img {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #009688;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .profile-img:hover {
+                transform: scale(1.1);
+                box-shadow: 0 8px 16px rgba(0,150,136,0.4);
+            }
+
+        .profile-info {
+            flex: 1;
+            margin-left: 20px;
+        }
+
+        .teacher-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #00796b;
+            margin-bottom: 5px;
+        }
+
+        .teacher-role {
+            font-size: 15px;
+            color: #3f6b6c;
+        }
+
+        .teacher-email {
+            font-size: 14px;
+            color: #6c8b8b;
+            margin-top: 5px;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .profile-btn {
+            background: #009688;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+            .profile-btn:hover {
+                background: #00796b;
+                transform: translateY(-3px);
+                box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            }
+
+            .profile-btn.outline {
+                background: white;
+                color: #009688;
+                border: 2px solid #009688;
+            }
+
+                .profile-btn.outline:hover {
+                    background: #e0f7f7;
+                }
+
+        /* STATS CARDS */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            text-align: center;
+            border-top: 5px solid #009688;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #009688;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #00796b;
+        }
+
+        .stat-label {
+            color: #4b7070;
+            font-size: 15px;
+            margin-top: 5px;
+        }
+
+        /* QUICK ACTIONS */
+        .quick-actions {
+            margin-top: 40px;
+        }
+
+        .quick-title {
+            color: #00796b;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 20px;
+        }
+
+        .quick-card {
+            background: #fff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px;
+            border-left: 5px solid #009688;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+            cursor: pointer;
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .quick-card:hover {
+                background: #e0f7f7;
+                transform: translateY(-5px);
+                box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+            }
+
+            .quick-card i {
+                font-size: 26px;
+                color: #009688;
+                margin-bottom: 8px;
+            }
+
+        /* TABLE */
+        .table-section {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            color: #00796b;
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .custom-table {
+            width: 100%;
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+            .custom-table table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .custom-table th {
+                background: #009688;
+                color: white;
+                padding: 12px 15px;
+                text-align: left;
+                font-weight: 600;
+            }
+
+            .custom-table td {
+                padding: 12px 15px;
+                border-bottom: 1px solid #eee;
+            }
+
+            .custom-table tr:hover {
+                background: #e0f7f7;
+            }
+    </style>
+}
+
+<div class="main-content">
+    <div class="page-header">
         <h1>Teacher Dashboard</h1>
-        <p>Welcome back, <strong>@Model.FullName</strong> 👋</p>
+        <p>Welcome back, Amit Sharma 👋 — here is your teaching overview.</p>
     </div>
 
-    <!-- PROFILE CARD -->
-    <div class="td-profile slide-up">
-        <img src="@Model.Photo" alt="Teacher Photo" />
-        <div class="td-profile-info">
-            <h2>@Model.FullName</h2>
-            <span>@Model.Qualification</span>
-            <p>@Model.Department</p>
-            <p><strong>@Model.Experience</strong> Years Experience</p>
+    <!-- Teacher Profile -->
+    <div class="teacher-profile">
+        <img src="https://cdn-icons-png.flaticon.com/512/4140/4140037.png" alt="Teacher" class="profile-img" />
+        <div class="profile-info">
+            <h3 class="teacher-name">Amit Sharma</h3>
+            <p class="teacher-role">Senior Lecturer • Computer Science Dept</p>
+            <p class="teacher-email">amit.sharma@college.edu</p>
+        </div>
+        <div class="profile-actions">
+            <button class="profile-btn">View Profile</button>
+            <button class="profile-btn outline">Edit Info</button>
         </div>
     </div>
 
-    <!-- STAT CARDS -->
-    <div class="td-stats">
+    <h2>Overview</h2>
+    <p class="sub-text">Summary of your courses and students.</p>
 
-        <div class="td-card zoom-in">
-            <i class="bi bi-journal-text"></i>
-            <h3>@Model.TotalExams</h3>
-            <p>Total Exams</p>
+    <!-- Stats -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <i class="stat-icon bi bi-journal-bookmark"></i>
+            <div class="stat-value">5</div>
+            <div class="stat-label">My Courses</div>
         </div>
-
-        <div class="td-card zoom-in delay-1">
-            <i class="bi bi-pencil-square"></i>
-            <h3>@Model.ResultsEntered</h3>
-            <p>Results Entered</p>
+        <div class="stat-card">
+            <i class="stat-icon bi bi-people-fill"></i>
+            <div class="stat-value">120</div>
+            <div class="stat-label">My Students</div>
         </div>
-
-        <div class="td-card zoom-in delay-2">
-            <i class="bi bi-check-circle"></i>
-            <h3>@Model.PublishedExams</h3>
-            <p>Published Exams</p>
+        <div class="stat-card">
+            <i class="stat-icon bi bi-pencil-square"></i>
+            <div class="stat-value">320</div>
+            <div class="stat-label">Marks Entry</div>
         </div>
-
-        <div class="td-card zoom-in delay-3">
-            <i class="bi bi-people-fill"></i>
-            <h3>@Model.StudentsEvaluated</h3>
-            <p>Students Evaluated</p>
+        <div class="stat-card">
+            <i class="stat-icon bi bi-file-earmark-text"></i>
+            <div class="stat-value">8</div>
+            <div class="stat-label">Exams</div>
         </div>
-
     </div>
 
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <div class="quick-title">Quick Actions</div>
+        <div class="quick-grid">
+            <div class="quick-card"><i class="bi bi-journal"></i><br>My Courses</div>
+            <div class="quick-card"><i class="bi bi-people"></i><br>My Students</div>
+            <div class="quick-card"><i class="bi bi-pencil"></i><br>Marks Entry</div>
+            <div class="quick-card"><i class="bi bi-file-text"></i><br>Exams</div>
+        </div>
+    </div>
+
+    <!-- Recent Students Table -->
+    <div class="table-section">
+        <div class="section-title">Recent Students</div>
+        <div class="custom-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Student Name</th>
+                        <th>Course</th>
+                        <th>Date Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>Rahul Sharma</td><td>B.Sc Computer Science</td><td>01-Feb-2026</td></tr>
+                    <tr><td>2</td><td>Priya Desai</td><td>B.Com</td><td>03-Feb-2026</td></tr>
+                    <tr><td>3</td><td>Amit Patel</td><td>B.A English</td><td>04-Feb-2026</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

@@ -4,35 +4,43 @@
 }
 
 <div class="container mt-4">
+    @if (TempData["msg"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show">
+            @TempData["msg"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <div class="card shadow">
         <div class="card-header text-white" style="background-color:#0d6f6a;">
             <h4>Edit Teacher</h4>
         </div>
 
         <div class="card-body">
-            <div class="alert alert-info">
-                Are you sure you want to edit this teacher?
-            </div>
-
-            @using (Html.BeginForm("Edit", "Teacher", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            @using (Html.BeginForm("Edit", "Teachers", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
                 @Html.HiddenFor(m => m.TeacherId)
 
+                <!-- Full Name -->
                 <div class="mb-3">
                     @Html.LabelFor(m => m.User.FullName)
                     @Html.TextBoxFor(m => m.User.FullName, new { @class = "form-control" })
                 </div>
 
+                <!-- Email -->
                 <div class="mb-3">
                     @Html.LabelFor(m => m.User.Email)
                     @Html.TextBoxFor(m => m.User.Email, new { @class = "form-control", type = "email" })
                 </div>
 
+                <!-- Qualification -->
                 <div class="mb-3">
                     @Html.LabelFor(m => m.Qualification)
                     @Html.TextBoxFor(m => m.Qualification, new { @class = "form-control" })
                 </div>
 
+                <!-- Department -->
                 <div class="mb-3">
                     @Html.LabelFor(m => m.Department)
                     @Html.DropDownListFor(
@@ -49,29 +57,43 @@
                                 )
             </div>
 
+            <!-- Experience -->
             <div class="mb-3">
                 @Html.LabelFor(m => m.Experience, "Experience (Years)")
                 @Html.TextBoxFor(m => m.Experience, new { @class = "form-control", type = "number", min = "0" })
             </div>
 
+            <!-- Bio -->
             <div class="mb-3">
                 @Html.LabelFor(m => m.Bio)
                 @Html.TextAreaFor(m => m.Bio, new { @class = "form-control", rows = "3" })
             </div>
 
-            <div class="mb-3">
+            <!-- Photo preview & upload -->
+            <div class="mb-3 text-center">
                 <label class="form-label">Photo</label>
-                <input type="file" name="PhotoFile" class="form-control" />
-            </div>
-
-            <button type="submit" class="btn text-white" style="background-color:#0d6f6a;">
-                OK
-            </button>
-
-            <a asp-action="Index" class="btn btn-secondary">
-                Cancel
-            </a>
+                <div class="mb-2">
+                    @if (!string.IsNullOrEmpty(Model.Photo))
+                        {
+                            <img src="@Url.Content(Model.Photo)" alt="Teacher Photo" class="img-thumbnail" style="max-width:150px;" />
                         }
+                        else
+                        {
+                            <img src="~/images/default-user.png" alt="Default Photo" class="img-thumbnail" style="max-width:150px;" />
+                        }
+                    </div>
+                    <input type="file" name="PhotoFile" class="form-control" />
+                    <small class="text-muted">Leave blank to keep existing photo</small>
+                </div>
+
+                <!-- Buttons -->
+                <button type="submit" class="btn text-white" style="background-color:#0d6f6a;">
+                    OK
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    Cancel
+                </a>
+            }
         </div>
     </div>
 </div>
