@@ -1,5 +1,4 @@
 ﻿@model List<StudentManagementSystem.Models.Teacher>
-
 @{
     ViewData["Title"] = "Teachers";
 }
@@ -10,32 +9,33 @@
 
 <div class="container-fluid mt-4">
 
-    <!-- Header with Search and Manage Button -->
+    @if (TempData["msg"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @TempData["msg"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="teacher-page-header d-flex justify-content-between align-items-center mb-4">
         <h3 class="fw-bold">Teachers</h3>
-
         <div class="d-flex align-items-center">
-            <!-- Search Bar -->
-            <form class="teacher-search me-3" method="get" asp-action="Index">
+            <form id="searchForm" class="teacher-search me-3" method="get" asp-action="Index">
                 <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Search teachers..." name="searchTerm" />
+                    <input type="text" class="form-control" placeholder="Search teachers..."
+                           name="searchTerm" id="searchInput" value="@ViewBag.SearchTerm" />
                     <button class="btn btn-teal" type="submit">
                         <i class="bi bi-search"></i>
                     </button>
                 </div>
             </form>
 
-            <!-- Manage Button -->
-            @if (Context.Session.GetString("Role") == "Admin")
-        {
             <a asp-action="Details" class="btn btn-manage-teachers">
                 <i class="bi bi-plus-lg me-1"></i> Manage Teachers
             </a>
-        }
         </div>
     </div>
 
-    <!-- Teacher Cards -->
     <div class="row g-4">
         @if (Model != null && Model.Any())
         {
@@ -43,37 +43,27 @@
             {
                 <div class="col-xl-3 col-lg-4 col-md-6">
                     <div class="teacher-card card h-100 shadow-sm border-0">
-
-                        <!-- Photo -->
                         <div class="text-center pt-4">
                             @if (!string.IsNullOrEmpty(teacher.Photo))
                             {
-                                <img src="@Url.Content(teacher.Photo)"
-                                     alt="Teacher Photo" />
+                                <img src="@teacher.Photo" alt="Teacher Photo" />
                             }
                             else
                             {
-                                <img src="~/images/default-user.png"
-                                     alt="Default Photo" />
+                                <img src="~/images/default-user.png" alt="Default Photo" />
                             }
                         </div>
-
-                        <!-- Body -->
                         <div class="card-body text-center">
                             <h5 class="fw-bold mb-1">@teacher.User?.FullName</h5>
                             <p class="text-muted small mb-2">@teacher.Qualification</p>
                             <span class="badge badge-department mb-2">@teacher.Department</span>
-
                             <div class="small text-muted mt-2">
                                 <strong>@teacher.Experience</strong> years experience
                             </div>
-
                             @if (!string.IsNullOrEmpty(teacher.Bio))
                             {
                                 <p class="small text-muted mt-2">
-                                    @(teacher.Bio.Length > 80
-                                                            ? teacher.Bio.Substring(0, 80) + "..."
-                                                            : teacher.Bio)
+                                    @(teacher.Bio.Length > 80 ? teacher.Bio.Substring(0, 80) + "..." : teacher.Bio)
                                 </p>
                             }
                         </div>
@@ -91,3 +81,18 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchForm = document.getElementById('searchForm');
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') searchForm.submit();
+        });
+        let timeout = null;
+        searchInput.addEventListener('keyup', function () {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => searchForm.submit(), 500);
+        });
+    </script>
+}
