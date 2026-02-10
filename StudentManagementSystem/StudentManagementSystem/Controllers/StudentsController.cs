@@ -98,34 +98,37 @@ namespace StudentManagementSystem.Controllers
         }
 
 
-        // ================= CREATE POST =================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Student student, IFormFile PhotoFile)
         {
+            if (student.UserId == 0)
+                ModelState.AddModelError("UserId", "Please select a student user.");
+
             if (!ModelState.IsValid)
             {
                 LoadCreateDropdowns();
                 return View(student);
             }
 
-            // ✅ PHOTO UPLOAD
+            // Photo upload
             if (PhotoFile != null && PhotoFile.Length > 0)
             {
                 string uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "students");
                 Directory.CreateDirectory(uploadsFolder);
 
-                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(PhotoFile.FileName);
+                string fileName = Guid.NewGuid() + Path.GetExtension(PhotoFile.FileName);
                 string filePath = Path.Combine(uploadsFolder, fileName);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await PhotoFile.CopyToAsync(stream);
-                }
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await PhotoFile.CopyToAsync(stream);
 
-                // ✅ DB માં ફક્ત path
                 student.Photo = "/uploads/students/" + fileName;
             }
+
+            // REQUIRED VALUES
+            student.EnrollmentNo = GenerateEnrollmentNo();
+            student.CreatedAt = DateTime.Now;
 
             _context.Students.Add(student);
             await _context.SaveChangesAsync();
