@@ -20,7 +20,7 @@ html, body {
 body {
     background-color: var(--bg-page);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    overflow-y: auto; /* ENABLE SCROLL */
+    overflow-y: auto;
 }
 
 /* ================================
@@ -43,14 +43,15 @@ body {
    SIDEBAR (FIXED – SCROLLS INDEPENDENT)
 ================================ */
 .sidebar {
-    width: 240px;
-    background-color: #063f3f;
-    padding-top: 20px;
-    flex-shrink: 0;
-    overflow-y: auto; /* scroll if sidebar is long */
-    position: sticky;
-    top: 56px; /* height of navbar */
-    height: calc(100vh - 56px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background-color: var(--sidebar-bg);
+    overflow: hidden; 
+    z-index: 1000;
+    padding-top: 56px;
 }
 
     .sidebar .nav-link {

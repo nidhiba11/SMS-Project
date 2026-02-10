@@ -30,13 +30,6 @@ namespace StudentManagementSystem.Controllers
         // Create - Display form
         public IActionResult Create()
         {
-            // Only users not yet assigned as teachers
-            var assignedUserIds = _context.Teachers.Select(t => t.UserId).ToList();
-            var availableUsers = _context.Users
-                .Where(u => u.Role == "Teacher" && !assignedUserIds.Contains(u.UserId))
-                .ToList();
-
-            ViewBag.Users = new SelectList(availableUsers, "UserId", "FullName");
             return View();
         }
 

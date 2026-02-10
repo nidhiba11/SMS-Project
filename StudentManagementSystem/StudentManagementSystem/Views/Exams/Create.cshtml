@@ -1,188 +1,98 @@
 ﻿@model StudentManagementSystem.Models.Exam
-@{
-    ViewData["Title"] = "Add Exam";
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <p>@error.ErrorMessage</p>
+        }
+    </div>
 }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+@{
+    ViewData["Title"] = "Create Exam";
+    var courses = ViewBag.Courses as List<StudentManagementSystem.Models.Course>;
+}
 
-<style>
-    .erp-card {
-        border-radius: 18px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        background: #fff;
-    }
+<div class="container mt-4">
+    <h2 class="fw-bold mb-4">Create Exam</h2>
 
-    .erp-header {
-        background: linear-gradient(135deg, #003b3f, #0fa4a9);
-        border-radius: 18px 18px 0 0;
-        height: 90px;
-    }
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
 
-    .erp-label {
-        font-weight: 600;
-        color: #003b3f;
-        margin-bottom: 6px;
-    }
-
-    .erp-input,
-    .erp-select {
-        border-radius: 12px;
-        padding: 12px 14px;
-        border: 1px solid #ddd;
-    }
-
-        .erp-input:focus,
-        .erp-select:focus {
-            border-color: #0fa4a9;
-            box-shadow: 0 0 0 0.2rem rgba(15,164,169,.25);
-        }
-
-    .btn-erp {
-        background: linear-gradient(135deg, #003b3f, #0fa4a9);
-        border: none;
-        color: #fff;
-        padding: 10px 28px;
-        border-radius: 30px;
-        font-weight: 600;
-    }
-</style>
-
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-
-            <div class="card erp-card border-0">
-
-                <!-- Header -->
-                <div class="erp-header d-flex flex-column justify-content-center align-items-center text-white">
-                    <i class="bi bi-file-earmark-text-fill" style="font-size:32px;"></i>
-                    <h6 class="mb-0 fw-semibold">Add Exam</h6>
-                </div>
-
-                <!-- Body -->
-                <div class="card-body p-4">
-                    <form asp-action="Create" method="post">
-                        <div asp-validation-summary="All" class="text-danger"></div>
-
-
-                        <!-- Exam Name -->
-                        <div class="mb-3">
-                            <label class="erp-label">
-                                <i class="bi bi-pencil-square me-1"></i> Exam Name
-                            </label>
-                            <input asp-for="ExamName" class="form-control erp-input"
-                                   placeholder="Enter exam name" />
-                            <span asp-validation-for="ExamName"></span>
-
-                        </div>
-
-                        <!-- Course -->
-                        <div class="mb-3">
-                            <label class="erp-label">
-                                <i class="bi bi-book me-1"></i> Course
-                            </label>
-                            <select asp-for="CourseId"
-                                    asp-items="ViewBag.Courses"
-                                    class="form-select erp-select">
-                                <option value="">-- Select Course --</option>
-                            </select>
-                            <span asp-validation-for="CourseId" class="text-danger"></span>
-
-                        </div>
-
-                        <div class="row">
-                            <!-- Semester -->
-                            <div class="col-md-6 mb-3">
-                                <label class="erp-label">
-                                    <i class="bi bi-layers me-1"></i> Semester
-                                </label>
-                                <input asp-for="Semester" type="number"
-                                       class="form-control erp-input"
-                                       placeholder="Semester" />
-                            </div>
-
-                            <!-- Exam Date -->
-                            <div class="col-md-6 mb-3">
-                                <label class="erp-label">
-                                    <i class="bi bi-calendar-event me-1"></i> Exam Date
-                                </label>
-                                <input asp-for="ExamDate" type="date"
-                                       class="form-control erp-input" />
-                            </div>
-                        </div>
-
-                        <!-- Exam Type -->
-                        <div class="mb-3">
-                            <label class="erp-label">
-                                <i class="bi bi-list-check me-1"></i> Exam Type
-                            </label>
-                            <select asp-for="ExamType" class="form-select erp-select">
-                                <option value="">-- Select Type --</option>
-                                <option>Midterm</option>
-                                <option>Final</option>
-                                <option>Practical</option>
-                            </select>
-                            <span asp-validation-for="ExamType" class="text-danger"></span>
-
-                        </div>
-
-                        <div class="row">
-                            <!-- Duration -->
-                            <div class="col-md-4 mb-3">
-                                <label class="erp-label">
-                                    <i class="bi bi-clock me-1"></i> Duration (Minutes)
-                                </label>
-                                <input asp-for="DurationMinutes" type="number"
-                                       class="form-control erp-input"
-                                       placeholder="120" />
-                                <span asp-validation-for="DurationMinutes" class="text-danger"></span>
-
-                            </div>
-
-                            <!-- Max Marks -->
-                            <div class="col-md-4 mb-3">
-                                <label class="erp-label">
-                                    <i class="bi bi-graph-up me-1"></i> Max Marks
-                                </label>
-                                <input asp-for="MaxMarks" type="number"
-                                       class="form-control erp-input" />
-                            </div>
-
-                            <!-- Min Marks -->
-                            <div class="col-md-4 mb-3">
-                                <label class="erp-label">
-                                    <i class="bi bi-graph-down me-1"></i> Min Marks
-                                </label>
-                                <input asp-for="MinMarks" type="number"
-                                       class="form-control erp-input" />
-                            </div>
-                        </div>
-
-                        <!-- Publish -->
-                        <div class="form-check form-switch mb-4">
-                            <input asp-for="IsPublished" class="form-check-input" />
-                            <label class="form-check-label fw-semibold">
-                                Publish Exam
-                            </label>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-flex justify-content-end gap-3">
-                            <a asp-action="Index"
-                               class="btn btn-outline-secondary rounded-pill px-4">
-                                Back
-                            </a>
-                            <button type="submit" class="btn btn-erp">
-                                <i class="bi bi-save me-1"></i> Save Exam
-                            </button>
-                        </div>
-
-                    </form>
-                </div>
-
-            </div>
-
+        <!-- Exam Name -->
+        <div class="mb-3">
+            <label class="form-label">Exam Name</label>
+            <input asp-for="ExamName" class="form-control" />
+            <span asp-validation-for="ExamName" class="text-danger"></span>
         </div>
-    </div>
+
+        <!-- Course Dropdown -->
+        <div class="mb-3">
+            <label class="form-label">Course</label>
+            <select asp-for="CourseId" class="form-select">
+                <option value="">-- Select Course --</option>
+                @foreach (var c in ViewBag.Courses)
+                {
+                    <option value="@c.CourseId">@c.CourseName</option>
+                }
+            </select>
+            <span asp-validation-for="CourseId" class="text-danger"></span>
+        </div>
+
+        <!-- Semester -->
+        <div class="mb-3">
+            <label class="form-label">Semester</label>
+            <input asp-for="Semester" type="number" class="form-control" />
+        </div>
+
+        <!-- Exam Date -->
+        <div class="mb-3">
+            <label class="form-label">Exam Date</label>
+            <input asp-for="ExamDate" type="date" class="form-control" />
+        </div>
+
+        <!-- Exam Type -->
+        <div class="mb-3">
+            <label class="form-label">Exam Type</label>
+            <select asp-for="ExamType" class="form-select">
+                <option value="">-- Select Type --</option>
+                <option>Midterm</option>
+                <option>Final</option>
+                <option>Practical</option>
+            </select>
+        </div>
+
+        <!-- Duration -->
+        <div class="mb-3">
+            <label class="form-label">Duration (Minutes)</label>
+            <input asp-for="DurationMinutes" type="number" class="form-control" />
+        </div>
+
+        <!-- Max Marks -->
+        <div class="mb-3">
+            <label class="form-label">Max Marks</label>
+            <input asp-for="MaxMarks" type="number" class="form-control" />
+        </div>
+
+        <!-- Min Marks -->
+        <div class="mb-3">
+            <label class="form-label">Min Marks</label>
+            <input asp-for="MinMarks" type="number" class="form-control" />
+        </div>
+
+        <!-- Buttons -->
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success px-4">
+                Save Exam
+            </button>
+            <a asp-action="Index" class="btn btn-secondary ms-2">
+                Cancel
+            </a>
+        </div>
+    </form>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

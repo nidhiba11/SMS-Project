@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StudentManagementSystem.Models;
 
@@ -47,7 +48,7 @@ namespace StudentManagementSystem.Controllers
 
             return View(exam);
         }
-
+        [HttpGet]
         [RoleAuthorize("Admin","Teacher")]
         public IActionResult Create()
         {
@@ -56,21 +57,31 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpPost]
-        [RoleAuthorize("Admin","Teacher")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Exam exam)
+        public IActionResult Create(Exam exam)
         {
-            if (ModelState.IsValid)
+            // if (!(User.IsInRole("Admin") || User.IsInRole("Teacher")))
+            //   return Unauthorized();
+            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
             {
-                exam.CreatedAt = DateTime.Now;
-                _context.Exams.Add(exam);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                Console.WriteLine(error.ErrorMessage);
+            }
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Courses = _context.Courses.ToList();
+                return View(exam);
             }
 
-            ViewBag.Courses = _context.Courses.ToList();
-            return View(exam);
+            exam.CreatedAt = DateTime.Now;
+            exam.IsPublished = false;
+
+            _context.Exams.Add(exam);
+            _context.SaveChanges();
+
+            TempData["success"] = "Exam created successfully!";
+            return RedirectToAction("Index");
         }
+
 
         [RoleAuthorize("Admin","Teacher")]
         public async Task<IActionResult> Edit(int id)

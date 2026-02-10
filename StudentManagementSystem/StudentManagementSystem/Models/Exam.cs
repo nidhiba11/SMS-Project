@@ -9,10 +9,11 @@ namespace StudentManagementSystem.Models
 
         [Required, StringLength(100)]
         public string ExamName { get; set; }
-
-        public int CourseId { get; set; }
-
+        [Required(ErrorMessage = "Course is required")]
+        public int? CourseId { get; set; }
+        [Required]
         public int Semester {  get; set; }
+        [Required]
         public DateTime ExamDate { get; set; }
         [Required, StringLength(50)]
         public string ExamType { get; set; } // Midterm, Final, Practical
