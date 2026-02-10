@@ -1,148 +1,126 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudentManagementSystem.Models;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace StudentManagementSystem.Controllers
 {
     public class CoursesController : Controller
     {
         private readonly ApplicationDbContext _context;
+
         public CoursesController(ApplicationDbContext context)
         {
             _context = context;
         }
+
+        // ================= INDEX =================
         public IActionResult Index(string searchTerm)
         {
+            // Get all active courses
             var courses = _context.Courses
-                .Where(c => c.IsActive);
+                .Where(c => c.IsActive)
+                .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchTerm))
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
+                searchTerm = searchTerm.ToLower();
+
                 courses = courses.Where(c =>
-                c.CourseName.Contains(searchTerm));
+                    c.CourseName.ToLower().Contains(searchTerm) ||
+                    c.Department.ToLower().Contains(searchTerm) ||
+                    c.Description.ToLower().Contains(searchTerm) ||
+                    c.Duration.ToString().Contains(searchTerm) ||   // search by duration
+                    c.TotalCredits.ToString().Contains(searchTerm)  // search by credits
+                );
             }
 
+            ViewBag.SearchTerm = searchTerm; // keep search value
             return View(courses.ToList());
         }
-        [RoleAuthorize("Admin")]
+
+        // ================= DETAILS =================
         public IActionResult Details()
         {
-            return View(_context.Courses.ToList());
+            var courses = _context.Courses.ToList();
+            return View(courses);
         }
-         [HttpGet]
+
+        // ================= CREATE GET =================
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
-        // ===================== CREATE COURSE (POST) =====================
+        // ================= CREATE POST =================
         [HttpPost]
-        [Authorize(Roles = "Admin")]
-
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Course course)
         {
             if (!ModelState.IsValid)
             {
-                TempData["Error"] = "Please correct the errors in the form.";
                 return View(course);
             }
 
-            // Add course
             course.CreatedAt = DateTime.Now;
-            course.IsActive = true; // default active
+            course.IsActive = course.IsActive; // checkbox binding
             _context.Courses.Add(course);
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Course created successfully!";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Details");
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpPost]
-        public IActionResult Delete(int id)
-        {
-            var course = _context.Courses.Find(id);
-
-            if (course != null)
-            {
-                // delete related exams first (important)
-                var exams = _context.Exams
-                    .Where(e => e.CourseId == id)
-                    .ToList();
-
-                _context.Exams.RemoveRange(exams);
-
-                _context.Courses.Remove(course);
-                _context.SaveChanges();
-            }
-
-            return RedirectToAction(nameof(Index));
-        }
-        // ===================== EDIT COURSE (GET) =====================
+        // ================= EDIT GET =================
         [HttpGet]
-        [Authorize(Roles = "Admin,Teacher")]
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
-                return NotFound();
-
-            var course = await _context.Courses
-                .FirstOrDefaultAsync(c => c.CourseId == id);
-
-            if (course == null)
-                return NotFound();
+            var course = await _context.Courses.FindAsync(id);
+            if (course == null) return NotFound();
 
             return View(course);
         }
 
+        // ================= EDIT POST =================
         [HttpPost]
-        [Authorize(Roles = "Admin,Teacher")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Course course)
+        public async Task<IActionResult> Edit(Course course)
         {
-            if (id != course.CourseId)
-                return NotFound();
+            if (!ModelState.IsValid) return View(course);
 
-            if (!ModelState.IsValid)
-            {
-                TempData["error"] = "Please correct the errors and try again.";
-                return View(course);
-            }
+            var existing = await _context.Courses.FindAsync(course.CourseId);
+            if (existing == null) return NotFound();
 
-            try
-            {
-                var existingCourse = await _context.Courses
-                    .FirstOrDefaultAsync(c => c.CourseId == id);
+            existing.CourseName = course.CourseName;
+            existing.Description = course.Description;
+            existing.Duration = course.Duration;
+            existing.TotalCredits = course.TotalCredits;
+            existing.Department = course.Department;
+            existing.IsActive = course.IsActive;
+            existing.UpdatedAt = DateTime.Now;
 
-                if (existingCourse == null)
-                    return NotFound();
+            await _context.SaveChangesAsync();
 
-                // Update fields
-                existingCourse.CourseName = course.CourseName;
-                existingCourse.Description = course.Description;
-                existingCourse.TotalCredits = course.TotalCredits;
-                existingCourse.Department = course.Department;
-                existingCourse.Duration = course.Duration;
-                existingCourse.IsActive = course.IsActive;
-                existingCourse.UpdatedAt = DateTime.Now;
-
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Courses updated successfully!";
-                return RedirectToAction(nameof(Index));
-
-                
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Courses.Any(c => c.CourseId == course.CourseId))
-                    return NotFound();
-
-                throw;
-            }
+            TempData["Success"] = "Course updated successfully!";
+            return RedirectToAction("Details");
         }
 
+        // ================= DELETE =================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var course = await _context.Courses.FindAsync(id);
+            if (course == null) return NotFound();
+
+            _context.Courses.Remove(course);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Course deleted successfully!";
+            return RedirectToAction("Details");
+        }
     }
 }
