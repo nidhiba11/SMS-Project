@@ -18,13 +18,25 @@ namespace StudentManagementSystem.Controllers
             _context = context;
         }
         [RoleAuthorize("Student", "Teacher", "Admin")]
-        public IActionResult Index()
+        public IActionResult Index(string searchTerm)
         {
+            ViewBag.SearchTerm = searchTerm; // To keep the search text in the view
+
             var teachers = _context.Teachers
                 .Include(t => t.User)
-                .ToList();
+                .AsQueryable();
 
-            return View(teachers);
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.Trim().ToLower();
+                teachers = teachers.Where(t =>
+                    t.User.FullName.ToLower().Contains(searchTerm) ||
+                    t.User.Email.ToLower().Contains(searchTerm) ||
+                    t.Department.ToLower().Contains(searchTerm)
+                );
+            }
+
+            return View(teachers.ToList());
         }
 
         // Create - Display form
